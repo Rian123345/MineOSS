@@ -15,7 +15,7 @@ export function AboutApp({ winId }: AppProps) {
       <div className="app-scroll" style={{ padding: '14px 22px', lineHeight: '18px' }}>
         <div style={{ borderBottom: '1px solid #d5dfe5', paddingBottom: 10, marginBottom: 10 }}>
           MineOS<br />
-          {tr("Version 1.0 (Build 7601: Store)", "Version 1.0 (Build 7601: Store)")}<br />
+          {tr("Version 1.0 (Build 7601: Store)", "Beta 1.0 (Build 7601: Store)")}<br />
           {tr("Ein webbasiertes Betriebssystem mit einer einzigen installierten Anwendung: dem Minecraft Store.", "A web-based operating system with a single installed application: the Minecraft Store.")}</div>
         <p>{tr("So funktioniert der Store:", "How the store works:")}</p>
         <ol style={{ paddingLeft: 18, margin: '4px 0 10px' }}>
