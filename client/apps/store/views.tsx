@@ -7,7 +7,7 @@ import { euro, cls } from '../../lib/format';
 import { showBalloon, playChime } from '../../os/session';
 import { tr, locale } from '../../lib/i18n';
 
-export type SortKey = 'name' | 'price-asc' | 'price-desc' | 'category';
+export type SortKey = 'top' | 'name' | 'price-asc' | 'price-desc' | 'category';
 export type ViewMode = 'tiles' | 'details';
 
 export function addToCart(p: Product, qty: number) {
@@ -16,10 +16,20 @@ export function addToCart(p: Product, qty: number) {
   showBalloon({ title: tr("Zum Warenkorb hinzugefügt", "Added to cart"), text: `${qty}× ${p.name} (${p.unitLabel}) – ${euro(p.priceCents * qty)}`, icon: 'success' }, 3500);
 }
 
+/* ─────────── Meist gekaufte Sachen (automatisch vom Server berechnet) ─────────── */
+
+export const TOP_TITLE = () => tr('Meist gekaufte Sachen', 'Most Bought');
+export const TOP_ICON = 'emerald';
+
+export function topProducts(catalog: Catalog): Product[] {
+  const byId = new Map(catalog.products.map((p) => [p.id, p]));
+  return (catalog.topProductIds ?? []).map((id) => byId.get(id)).filter((p): p is Product => !!p);
+}
+
 /* ─────────── Startseite ─────────── */
 
 export function HomeView({ catalog, go }: { catalog: Catalog; go: (v: View) => void }) {
-  const featured = catalog.products.filter((p) => p.featured).slice(0, 8);
+  const featured = topProducts(catalog).slice(0, 8);
   return (
     <div className="store-home">
       <div className="hero">
@@ -27,7 +37,7 @@ export function HomeView({ catalog, go }: { catalog: Catalog; go: (v: View) => v
           <h1>{tr("Willkommen im Minecraft Store", "Welcome to the Minecraft Store")}</h1>
           <p>{tr("Blöcke, Erze, Redstone und seltene Items – bestellt in Sekunden, frisch für dich gefarmt und persönlich in Minecraft übergeben.", "Blocks, ores, redstone and rare items – ordered in seconds, freshly farmed for you and handed over in person in Minecraft.")}</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn green big" onClick={() => go({ kind: 'featured' })}>{tr("Beliebte Items ansehen", "View popular items")}</button>
+            <button className="btn green big" onClick={() => go({ kind: 'featured' })}>{tr('Meist gekaufte Sachen ansehen', 'View most bought')}</button>
             <button className="btn big" onClick={() => go({ kind: 'track' })}>{tr("Meine Bestellungen", "My orders")}</button>
           </div>
         </div>
@@ -40,7 +50,7 @@ export function HomeView({ catalog, go }: { catalog: Catalog; go: (v: View) => v
 
       <div className="steps-row">
         {[
-          ['1', tr("Items auswählen", "Choose items"), tr("Stöbere durch 12 Kategorien und lege Items in den Warenkorb.", "Browse 12 categories and add items to your cart.")],
+          ['1', tr("Items auswählen", "Choose items"), tr('Stöbere durch die Daily- und Weekly-Quest-Items und lege sie in den Warenkorb.', 'Browse the daily and weekly quest items and add them to your cart.')],
           ['2', tr("Bestellung abschicken", "Place your order"), tr("Gib deinen Minecraft-Namen an – fertig. Bezahlt wird mit Ingame-Geld bei der Übergabe.", "Enter your Minecraft name – done. You pay with in-game money at the handover.")],
           ['3', tr("Wir farmen", "We farm"), tr("Deine Items werden in Minecraft gesammelt. Den Fortschritt siehst du live.", "Your items are collected in Minecraft. You can watch the progress live.")],
           ['4', tr("Übergabe", "Handover"), tr("Wir treffen uns im Spiel und übergeben dir alles persönlich.", "We meet in the game and hand everything over to you in person.")],
@@ -52,10 +62,12 @@ export function HomeView({ catalog, go }: { catalog: Catalog; go: (v: View) => v
         ))}
       </div>
 
-      <h2 className="section-title">{tr("Beliebte Items", "Popular items")}</h2>
-      <div className="product-grid">
-        {featured.map((p) => <ProductCard key={p.id} p={p} catalog={catalog} go={go} />)}
-      </div>
+      {featured.length > 0 && <>
+        <h2 className="section-title">{TOP_TITLE()}</h2>
+        <div className="product-grid">
+          {featured.map((p) => <ProductCard key={p.id} p={p} catalog={catalog} go={go} />)}
+        </div>
+      </>}
 
       <h2 className="section-title">{tr("Kategorien", "Categories")}</h2>
       <div className="category-grid">
@@ -68,6 +80,13 @@ export function HomeView({ catalog, go }: { catalog: Catalog; go: (v: View) => v
             </div>
           </button>
         ))}
+        <button className="category-tile" onClick={() => go({ kind: 'featured' })}>
+          <ItemIcon icon={TOP_ICON} size={40} />
+          <div>
+            <b>{TOP_TITLE()}</b>
+            <div className="muted">{tr('Automatisch nach Bestellungen', 'Updated automatically from orders')}</div>
+          </div>
+        </button>
       </div>
     </div>
   );
@@ -105,7 +124,7 @@ export function ProductCard({ p, catalog, go }: { p: Product; catalog: Catalog; 
 
 export function ProductList({ products, catalog, go, mode, sort, title, subtitle, emptyText }: {
   products: Product[]; catalog: Catalog; go: (v: View) => void; mode: ViewMode; sort: SortKey;
-  title: string; subtitle?: string; emptyText?: string;
+  title: string; subtitle?: string; emptyText?: string; keepOrder?: boolean;
 }) {
   const sorted = useMemo(() => {
     const arr = [...products];

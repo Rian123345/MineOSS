@@ -38,6 +38,8 @@ export interface Product {
 export interface Catalog {
   categories: Category[];
   products: Product[];
+  /** „Meist gekaufte Sachen“ – automatisch aus den Bestellungen, beste zuerst */
+  topProductIds?: number[];
 }
 
 export interface CartLine {

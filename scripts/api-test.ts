@@ -108,10 +108,21 @@ try {
   check('Neues Passwort funktioniert', (await loginUser('Alex_MC', 'neues-alex-passwort', REMOTE)).res.status === 200);
 
   console.log('\nKatalog & Sicherheit');
+  const cat0 = await api(alex, 'GET', '/api/catalog');
+  check('Start-Kategorien: Daily + Weekly, noch keine Produkte', cat0.status === 200 && cat0.data.categories.map((c: any) => c.slug).join() === 'daily-quest-items,weekly-quest-items' && cat0.data.products.length === 0);
+  const [daily, weekly] = cat0.data.categories;
+  const mk = (categoryId: number, name: string, priceCents: number, stock: number | null, maxQty: number, icon: string, featured = false) => api(admin, 'POST', '/api/admin/products', {
+    categoryId, name, description: 'Test', priceCents, unitLabel: '1 Stück', stock, minQty: 1, maxQty, icon, imageUrl: null, active: true, featured,
+  });
+  check('Produkte anlegen', (await mk(daily.id, 'Diamant', 25000, 500, 256, 'diamond')).status === 201
+    && (await mk(daily.id, 'Eisenbarren', 30000, null, 32, 'iron_ingot')).status === 201
+    && (await mk(weekly.id, 'Elytren', 500000, 3, 1, 'elytra', true)).status === 201);
   const cat = await api(alex, 'GET', '/api/catalog');
-  check('Katalog nach Anmeldung', cat.status === 200 && cat.data.categories.length === 12 && cat.data.products.length >= 40);
+  check('Katalog nach Anmeldung', cat.status === 200 && cat.data.products.length === 3);
   const diamond = cat.data.products.find((p: any) => p.name === 'Diamant');
   const iron = cat.data.products.find((p: any) => p.name === 'Eisenbarren');
+  const elytra = cat.data.products.find((p: any) => p.name === 'Elytren');
+  check('Meist gekauft: ohne Bestellungen nur „Beliebt“-Produkte', JSON.stringify(cat.data.topProductIds) === JSON.stringify([elytra.id]));
   check('Preise in Ingame-Dollar ($250 Diamant)', diamond.priceCents === 25000);
   check('CSRF: POST ohne Header abgelehnt', (await api(alex, 'POST', '/api/orders', {}, { csrf: false })).status === 403);
   check('CSRF: fremde Origin abgelehnt', (await api(alex, 'POST', '/api/orders', {}, { origin: 'https://evil.example' })).status === 403);
@@ -139,7 +150,9 @@ try {
   check('Discord-Webhook empfangen', !!hook);
   const hookText = JSON.stringify(hook ?? {});
   check('Discord: Spieler, Items, $-Preis, Konto, Zeit', hookText.includes('Steve\\\\_123') && hookText.includes('Diamant') && hookText.includes('$1,350') && hookText.includes('Alex') && hook?.embeds[0].timestamp, hook?.embeds?.[0]?.fields);
-  check('Lagerbestand reduziert', (await api(alex, 'GET', '/api/catalog')).data.products.find((p: any) => p.id === diamond.id).stock === diamond.stock - 3);
+  const catAfter = (await api(alex, 'GET', '/api/catalog')).data;
+  check('Lagerbestand reduziert', catAfter.products.find((p: any) => p.id === diamond.id).stock === diamond.stock - 3);
+  check('Meist gekauft: bestellte Produkte vorne, dann „Beliebt“', JSON.stringify(catAfter.topProductIds.slice(0, 2).sort()) === JSON.stringify([diamond.id, iron.id].sort()) && catAfter.topProductIds[2] === elytra.id, catAfter.topProductIds);
 
   console.log('\nMeine Bestellungen & Verfolgung');
   const mine = await api(alex, 'GET', '/api/me/orders');

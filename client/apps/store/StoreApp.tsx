@@ -6,7 +6,7 @@ import { useStore } from '../../lib/store';
 import { catalogStore, loadCatalog, useCatalog } from '../../lib/catalog';
 import { onAdminEvent } from '../../os/session';
 import { StoreIcon, ItemIcon, CartIcon, PackageIcon, SearchIcon, ArrowGlyph, Chevron, HomeIcon, StatusGlyph } from '../../os/icons';
-import { HomeView, ProductList, ProductDetail, type SortKey, type ViewMode } from './views';
+import { HomeView, ProductList, ProductDetail, topProducts, TOP_TITLE, TOP_ICON, type SortKey, type ViewMode } from './views';
 import { CartView, useCartLines } from './Cart';
 import { CheckoutView } from './Checkout';
 import { ConfirmationView, TrackView } from './Track';
@@ -27,6 +27,11 @@ export function StoreApp({ winId, props, nonce }: AppProps) {
   const [navOpen, setNavOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const view = hist[pos];
+  // „Meist gekaufte Sachen“ standardmäßig nach Beliebtheit sortieren, andere Listen nach Name
+  useEffect(() => {
+    if (view.kind === 'featured') setSort('top');
+    else setSort((s) => (s === 'top' ? 'name' : s));
+  }, [view.kind]);
   const { count, total, valid } = useCartLines(catalog);
 
   const go = (v: View) => {
@@ -68,7 +73,7 @@ export function StoreApp({ winId, props, nonce }: AppProps) {
   const crumbs: { label: string; v?: View }[] = [{ label: 'Minecraft Store', v: { kind: 'home' } }];
   let title = 'Minecraft Store';
   switch (view.kind) {
-    case 'featured': crumbs.push({ label: tr("Beliebte Items", "Popular items") }); title += tr(" – Beliebte Items", " – Popular items"); break;
+    case 'featured': crumbs.push({ label: TOP_TITLE() }); title += ' – ' + TOP_TITLE(); break;
     case 'category': crumbs.push({ label: category?.name ?? tr("Kategorie", "Category") }); title += ` – ${category?.name ?? ''}`; break;
     case 'search': crumbs.push({ label: tr(`Suchergebnisse für „${view.q}“`, `Search results for “${view.q}”`) }); title += tr(" – Suche", " – Search"); break;
     case 'product':
@@ -84,7 +89,7 @@ export function StoreApp({ winId, props, nonce }: AppProps) {
   const listCount =
     view.kind === 'category' ? catalog?.products.filter((p) => p.categoryId === view.id).length
       : view.kind === 'search' ? searchResults.length
-        : view.kind === 'featured' ? catalog?.products.filter((p) => p.featured).length
+        : view.kind === 'featured' ? (catalog ? topProducts(catalog).length : 0)
           : view.kind === 'home' ? catalog?.products.length : undefined;
   const showListTools = ['category', 'search', 'featured'].includes(view.kind);
 
@@ -99,7 +104,7 @@ export function StoreApp({ winId, props, nonce }: AppProps) {
     switch (view.kind) {
       case 'home': body = <HomeView catalog={catalog} go={go} />; break;
       case 'featured':
-        body = <ProductList title={tr("Beliebte Items", "Popular items")} subtitle={tr("Die meistbestellten Items unserer Kunden.", "Our customers' most ordered items.")} products={catalog.products.filter((p) => p.featured)} catalog={catalog} go={go} mode={mode} sort={sort} />; break;
+        body = <ProductList title={TOP_TITLE()} subtitle={tr('Die Items, die am häufigsten bestellt werden – aktualisiert sich automatisch.', 'The items ordered most often – updates automatically.')} products={topProducts(catalog)} catalog={catalog} go={go} mode={mode} sort={sort} keepOrder emptyText={tr('Noch keine Bestellungen – sobald bestellt wird, erscheinen hier die beliebtesten Items.', 'No orders yet – the most popular items will show up here once people order.')} />; break;
       case 'category':
         body = category
           ? <ProductList title={category.name} subtitle={category.description} products={catalog.products.filter((p) => p.categoryId === category.id)} catalog={catalog} go={go} mode={mode} sort={sort} emptyText={tr("In dieser Kategorie gibt es derzeit keine Produkte.", "There are currently no products in this category.")} />
@@ -156,6 +161,7 @@ export function StoreApp({ winId, props, nonce }: AppProps) {
           {showListTools && (
             <>
               <select className="select" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label={tr("Sortieren", "Sort")}>
+                {view.kind === 'featured' && <option value="top">{tr('Am meisten gekauft', 'Most bought first')}</option>}
                 <option value="name">{tr("Name (A–Z)", "Name (A–Z)")}</option>
                 <option value="price-asc">{tr("Preis aufsteigend", "Price: low to high")}</option>
                 <option value="price-desc">{tr("Preis absteigend", "Price: high to low")}</option>
@@ -178,7 +184,6 @@ export function StoreApp({ winId, props, nonce }: AppProps) {
           <div className="nav-group">
             <div className="nav-group-title"><StoreIcon size={16} /> Minecraft Store</div>
             <div className={cls('nav-item', view.kind === 'home' && 'selected')} onClick={() => go({ kind: 'home' })}><span className="ni-ic"><HomeIcon /></span>{tr("Startseite", "Home")}</div>
-            <div className={cls('nav-item', view.kind === 'featured' && 'selected')} onClick={() => go({ kind: 'featured' })}><span className="ni-ic"><ItemIcon icon="nether_star" size={16} /></span>{tr("Beliebte Items", "Popular items")}</div>
           </div>
           <div className="nav-group">
             <div className="nav-group-title">{tr("Kategorien", "Categories")}</div>
@@ -187,6 +192,11 @@ export function StoreApp({ winId, props, nonce }: AppProps) {
                 <span className="ni-ic"><ItemIcon icon={c.icon} size={16} /></span>{c.name}<span className="ni-count">{c.productCount}</span>
               </div>
             ))}
+            {catalog && (
+              <div className={cls('nav-item', view.kind === 'featured' && 'selected')} onClick={() => go({ kind: 'featured' })}>
+                <span className="ni-ic"><ItemIcon icon={TOP_ICON} size={16} /></span>{TOP_TITLE()}<span className="ni-count">{topProducts(catalog).length || ''}</span>
+              </div>
+            )}
           </div>
           <div className="nav-group">
             <div className="nav-group-title">{tr("Mein Einkauf", "My shopping")}</div>

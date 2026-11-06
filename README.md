@@ -44,7 +44,7 @@ MineOS gibt es auf Deutsch und Englisch. Umschalten kannst du an drei Stellen:
 - in der Taskleiste mit dem Sprachsymbol **DE/EN** (wie die Windows-7-Sprachleiste),
 - unter *Systemsteuerung → Region und Sprache*.
 
-Die Wahl wird im Browser gespeichert. Beim ersten Besuch übernimmt MineOS die Sprache des Browsers. Produkte und Kategorien haben zusätzlich einen englischen Namen und eine englische Beschreibung. Für alle 84 Beispielprodukte sind sie schon eingetragen. Bei eigenen Produkten trägst du sie in der Shop-Verwaltung im Reiter *Englisch* ein. Bleibt das Feld leer, wird der deutsche Text angezeigt. Discord-Nachrichten bleiben auf Deutsch.
+Die Wahl wird im Browser gespeichert. Beim ersten Besuch übernimmt MineOS die Sprache des Browsers. Produkte und Kategorien haben zusätzlich einen englischen Namen und eine englische Beschreibung. Du trägst sie in der Shop-Verwaltung im Reiter *Englisch* ein. Bleibt das Feld leer, wird der deutsche Text angezeigt. Discord-Nachrichten bleiben auf Deutsch.
 
 ### Dunkelmodus
 
@@ -98,7 +98,7 @@ Treppen, Zäune, Wände und ähnliche Sonderformen erzeugt das Skript nicht. Die
 - Angepasste Darstellung für Smartphones (Fenster automatisch maximiert, Touch-Bedienung)
 
 **Minecraft Store**
-- 12 Kategorien, 84 Beispielprodukte mit eigenen Pixel-Icons, Preise in Ingame-Dollar ($)
+- Kategorien „Daily Quest Items“ und „Weekly Quest Items“ plus die automatische Liste „Meist gekaufte Sachen“, Preise in Ingame-Dollar ($)
 - Suche, Sortierung, Kachel- und Detailansicht, Produktdetails, Mengenwahl
 - Warenkorb (bleibt im Browser gespeichert), Mengen ändern, Positionen entfernen
 - Checkout-Assistent: Spielername, Java/Bedrock, Discord (optional), Übergabezeit (optional), Infos (optional), Zusammenfassung vor dem Absenden
@@ -150,7 +150,9 @@ npm start
 
 Danach im Browser öffnen: **http://localhost:3000**
 
-Beim ersten Start werden automatisch alle Tabellen sowie 12 Kategorien mit 84 Beispielprodukten angelegt. Preise, Produkte und Kategorien kannst du anschließend in der Shop-Verwaltung ändern.
+Beim ersten Start werden automatisch alle Tabellen und die Kategorien „Daily Quest Items“ und „Weekly Quest Items“ angelegt (noch ohne Produkte). Produkte legst du in der Shop-Verwaltung unter *Preise & Produkte → Neues Produkt* an.
+
+„Meist gekaufte Sachen“ ist keine normale Kategorie, sondern wird automatisch aus den Bestellungen berechnet: Die 12 am häufigsten bestellten Produkte, stornierte Bestellungen zählen nicht. Solange es noch wenige Bestellungen gibt, wird die Liste mit Produkten aufgefüllt, bei denen du *„Beliebt“* angehakt hast.
 
 **Tests ausführen** (startet einen eigenen Testserver mit temporärer Datenbank und Discord-Attrappe, 69 Prüfungen):
 
@@ -333,7 +335,7 @@ mineos/
 │   ├── validation.ts       Serverseitige Validierung (zod)
 │   ├── discord.ts          Discord-Webhook mit Embeds
 │   ├── events.ts           Echtzeit-Kanal (Server-Sent Events)
-│   ├── seed.ts             Beispielkategorien und -produkte
+│   ├── seed.ts             Start-Kategorien beim ersten Start (start-categories.ts)
 │   └── routes/             Öffentliche und Admin-API
 ├── shared/                 Gemeinsame Typen und Status-Definitionen
 ├── scripts/                Build, Dev-Modus, Admin anlegen, API-Tests

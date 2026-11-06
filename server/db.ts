@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import crypto from 'node:crypto';
 import { config } from './config';
 import { CATEGORY_EN, PRODUCT_EN } from './seed-en';
+import { insertStartCategories } from './start-categories';
 
 /**
  * Datenbank: SQLite über das in Node.js eingebaute Modul `node:sqlite`.
@@ -174,6 +175,13 @@ const MIGRATIONS: (string | (() => void))[] = [
     for (const [slug, [n, d]] of Object.entries(CATEGORY_EN)) cat.run(n, d, slug);
     const prod = db.prepare('UPDATE products SET name_en = ?, description_en = ? WHERE name = ? AND name_en IS NULL');
     for (const [name, [n, d]] of Object.entries(PRODUCT_EN)) prod.run(n, d, name);
+  },
+  // v5 – Neuer Aufbau: alte Beispiel-Kategorien und -Produkte entfernen, nur noch
+  //      „Daily Quest Items“ und „Weekly Quest Items“ (+ automatisch „Meist gekaufte Sachen“).
+  //      Bestellungen bleiben erhalten (Positionen behalten Name, Preis und Icon).
+  () => {
+    db.exec('DELETE FROM products; DELETE FROM categories;');
+    insertStartCategories(db);
   },
 ];
 

@@ -164,7 +164,7 @@ function ProductDialog({ product, categories, onClose, onSaved }: { product: Pro
             </div>
             <div style={{ display: 'flex', gap: 18 }}>
               <label className="check"><input type="checkbox" checked={f.active} onChange={() => set('active', !f.active)} /> {tr("Aktiv (im Store sichtbar)", "Active (visible in the store)")}</label>
-              <label className="check"><input type="checkbox" checked={f.featured} onChange={() => set('featured', !f.featured)} /> {tr("Als „Beliebt“ hervorheben", "Highlight as “Popular”")}</label>
+              <label className="check"><input type="checkbox" checked={f.featured} onChange={() => set('featured', !f.featured)} /> {tr('Als „Beliebt“ markieren (füllt „Meist gekaufte Sachen“ auf, solange es noch wenige Bestellungen gibt)', 'Mark as “Popular” (fills “Most Bought” while there are only a few orders)')}</label>
             </div>
           </div>
         </div>

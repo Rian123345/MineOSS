@@ -24,7 +24,32 @@ function getCatalog() {
   const products = (db.prepare(`
     SELECT p.* FROM products p JOIN categories c ON c.id = p.category_id
     WHERE p.active = 1 AND c.active = 1 ORDER BY c.sort_order, p.name`).all() as Row[]).map(mapProduct);
-  return { categories, products };
+  return { categories, products, topProductIds: topProductIds() };
+}
+
+/**
+ * „Meist gekaufte Sachen“: automatisch aus den Bestellungen berechnet
+ * (nicht stornierte Bestellungen; zuerst nach Anzahl Bestellungen, dann nach Menge).
+ * Solange es noch wenige Bestellungen gibt, wird mit als „Beliebt“ markierten Produkten aufgefüllt.
+ */
+const TOP_LIMIT = 12;
+function topProductIds(): number[] {
+  const sold = (db.prepare(`
+    SELECT oi.product_id AS id FROM order_items oi
+    JOIN orders o ON o.id = oi.order_id
+    JOIN products p ON p.id = oi.product_id
+    JOIN categories c ON c.id = p.category_id
+    WHERE o.status != 'cancelled' AND p.active = 1 AND c.active = 1
+    GROUP BY oi.product_id
+    ORDER BY COUNT(DISTINCT oi.order_id) DESC, SUM(oi.quantity) DESC, p.name
+    LIMIT ?`).all(TOP_LIMIT) as { id: number }[]).map((r) => Number(r.id));
+  if (sold.length < TOP_LIMIT) {
+    const pinned = db.prepare(`
+      SELECT p.id FROM products p JOIN categories c ON c.id = p.category_id
+      WHERE p.featured = 1 AND p.active = 1 AND c.active = 1 ORDER BY p.name`).all() as { id: number }[];
+    for (const r of pinned) if (sold.length < TOP_LIMIT && !sold.includes(Number(r.id))) sold.push(Number(r.id));
+  }
+  return sold;
 }
 
 function newOrderNumber(): string {
