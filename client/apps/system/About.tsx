@@ -9,7 +9,7 @@ export function AboutApp({ winId }: AppProps) {
       <div className="about-banner">
         <Emblem size={64} />
         <div>
-          <div className="about-name">MineOS <span>Minecraft Store Edition</span></div>
+          <div className="about-name">MineOS <span>SeñorPollo Shop Order</span></div>
         </div>
       </div>
       <div className="app-scroll" style={{ padding: '14px 22px', lineHeight: '18px' }}>
