@@ -1,0 +1,31 @@
+{
+  "name": "mineos",
+  "version": "1.5.0",
+  "private": true,
+  "description": "MineOS – ein Minecraft-Shop als Windows-7-artiges Web-Betriebssystem",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0 <25"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "start": "node --disable-warning=ExperimentalWarning dist/server.js",
+    "make-admin": "tsx --disable-warning=ExperimentalWarning scripts/make-admin.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx --disable-warning=ExperimentalWarning scripts/api-test.ts"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "esbuild": "^0.28.0",
+    "tsx": "^4.20.0",
+    "typescript": ">=5.9.0 <7"
+  }
+}

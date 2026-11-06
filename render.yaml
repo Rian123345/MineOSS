@@ -1,0 +1,33 @@
+# Render-Blueprint für MineOS
+# Render → New → Blueprint → dieses Repository auswählen. Render liest diese Datei
+# und richtet alles automatisch ein (Webdienst + Festplatte für Datenbank & Uploads).
+services:
+  - type: web
+    name: mineos
+    runtime: node
+    plan: starter            # kostenpflichtig (~7 $/Monat); nötig für die Festplatte
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: mineos-data
+      mountPath: /var/data    # Datenbank, Uploads – bleibt bei Neustarts und Updates erhalten
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATA_DIR
+        value: /var/data
+      - key: TRUST_PROXY       # Render sitzt als Proxy davor (für echte IPs & HTTPS-Cookies)
+        value: "true"
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: IP_HASH_SECRET
+        generateValue: true
+      - key: MINEOS_SETUP_CODE # Code, mit dem du dein Admin-Konto anlegst (frei wählbar, 6–40 Zeichen)
+        sync: false
+      - key: PUBLIC_URL        # optional: z. B. https://mineos.onrender.com (für Links in Discord)
+        sync: false
+      - key: DISCORD_WEBHOOK_URL # optional – kann auch später in der Shop-Verwaltung gesetzt werden
+        sync: false

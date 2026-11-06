@@ -1,0 +1,232 @@
+/* ═══════════════════════════════════════════════════════════════════
+   MineOS – Dunkelmodus
+   Aktiv, wenn <html data-theme="dark"> gesetzt ist (Systemsteuerung → Anpassung
+   oder Mond-Symbol in der Taskleiste). Fensterrahmen bleiben Aero-Glas,
+   werden aber abgedunkelt; Fensterinhalte bekommen dunkle Flächen.
+   ═══════════════════════════════════════════════════════════════════ */
+
+[data-theme=dark] {
+  --d-bg0: #1b1e23;      /* Fensterinhalt */
+  --d-bg1: #20242a;      /* Seitenleisten, Leisten */
+  --d-bg2: #272c33;      /* Karten */
+  --d-bg3: #2e343c;      /* erhabene Flächen */
+  --d-input: #15181c;
+  --d-line: #363d46;
+  --d-line2: #46505c;
+  --d-text: #e3e6ea;
+  --d-muted: #98a2ad;
+  --d-green: #7fd65c;
+
+  --text: var(--d-text);
+  --link: #6db3ff;
+  --heading: #8fc3ff;
+  --hover-border: #3f6b98;
+  --hover-bg: linear-gradient(#2b3a4b, #253344);
+  --sel-border: #4d86c6;
+  --sel-bg: linear-gradient(#2f4a6b, #283f5d);
+  color-scheme: dark;
+}
+
+/* ─────────── Fensterrahmen, Taskleiste, Startmenü (abgedunkeltes Glas) ─────────── */
+[data-theme=dark] .win-glass::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(rgba(10,14,20,.42), rgba(10,14,20,.58));
+}
+[data-theme=dark] .win.inactive .win-glass::after { background: rgba(10,14,20,.66); }
+[data-theme=dark] .win-glass { box-shadow: 0 0 0 1px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.22), inset 0 1px 0 1px rgba(255,255,255,.1), 0 7px 28px 2px rgba(0,0,0,.7); }
+[data-theme=dark] .win-title { color: #f2f5f8; text-shadow: 0 0 6px #000, 0 0 3px #000; background: radial-gradient(ellipse at center, rgba(0,0,0,.45) 0%, rgba(0,0,0,.22) 45%, rgba(0,0,0,0) 72%); }
+[data-theme=dark] .win.inactive .win-title { color: #b7bec6; background: radial-gradient(ellipse at center, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 70%); }
+[data-theme=dark] .win-client, [data-theme=dark] .win.dialog .win-client { background: var(--d-bg0); box-shadow: 0 0 0 1px rgba(0,0,0,.6); color: var(--d-text); }
+
+[data-theme=dark] .taskbar { background-color: rgba(8, 12, 18, .78); }
+[data-theme=dark] .no-transparency .taskbar { background-color: rgb(14, 18, 24); }
+[data-theme=dark] .start-menu { background-color: rgba(10, 14, 20, .78); }
+[data-theme=dark] .no-transparency .start-menu { background-color: rgb(18, 23, 30); }
+[data-theme=dark] .sm-left { background: var(--d-bg0); box-shadow: 0 0 0 1px rgba(255,255,255,.12); }
+[data-theme=dark] .sm-item, [data-theme=dark] .sm-allprograms { color: var(--d-text); }
+[data-theme=dark] .sm-item small, [data-theme=dark] .sm-empty { color: var(--d-muted); }
+[data-theme=dark] .sm-item::before, [data-theme=dark] .sm-allprograms::before { border-color: #3f6b98; background: linear-gradient(#2d3f53, #24364a); box-shadow: none; }
+[data-theme=dark] .sm-sep { background: linear-gradient(to right, transparent, #3a424c 15%, #3a424c 85%, transparent); }
+[data-theme=dark] .sm-search { background: linear-gradient(#262c34, #20252c); border-top-color: #3a424c; }
+[data-theme=dark] .sm-userpic > div, [data-theme=dark] .ws-pic > div { background: #2a3038; }
+
+/* ─────────── Popups, Menüs, Sprechblasen ─────────── */
+[data-theme=dark] .tray-popup { background: #1f2329; border-color: #4a5563; box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset, 0 6px 22px rgba(0,0,0,.6); color: var(--d-text); }
+[data-theme=dark] .calendar-pop .cal-time, [data-theme=dark] .calendar-pop .cal-date,
+[data-theme=dark] .calendar-pop .cal-head, [data-theme=dark] .calendar-pop .cal-head button { color: #9cc9ff; }
+[data-theme=dark] .calendar-pop th { color: var(--d-muted); }
+[data-theme=dark] .calendar-pop td.other span { color: #5d6670; }
+[data-theme=dark] .calendar-pop td.today span { border-color: #4d86c6; background: linear-gradient(#2f4a6b, #283f5d); }
+[data-theme=dark] .calendar-pop .cal-foot { border-top-color: var(--d-line); }
+[data-theme=dark] .balloon { background: linear-gradient(#272c33, #1f2329); border-color: #4a5563; color: var(--d-text); }
+[data-theme=dark] .balloon::after { background: #1f2329; border-color: #4a5563; }
+[data-theme=dark] .ctx-menu { background: #22262c; border-color: #4a5563; color: var(--d-text); box-shadow: 2px 3px 8px rgba(0,0,0,.6); }
+[data-theme=dark] .ctx-menu::before { background: #2a2f36; box-shadow: 1px 0 0 #363d46; }
+[data-theme=dark] .ctx-item.disabled { color: #67707a; }
+[data-theme=dark] .ctx-item:not(.disabled):hover, [data-theme=dark] .ctx-item.open { border-color: #3f6b98; background: linear-gradient(#2d3f53, #24364a); box-shadow: none; }
+[data-theme=dark] .ctx-sep { background: #363d46; box-shadow: 0 1px 0 #1b1e23; }
+[data-theme=dark] .tb-preview-head { color: #fff; }
+
+/* ─────────── Bedienelemente ─────────── */
+[data-theme=dark] .btn { border-color: #59626e; color: var(--d-text); background: linear-gradient(#3a414a 0%, #343a42 49%, #2c3238 50%, #30363d 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+[data-theme=dark] .btn:hover:not(:disabled) { background: linear-gradient(#3a414a 0%, #343a42 49%, #2c3238 50%, #30363d 100%); border-color: #59626e; }
+[data-theme=dark] .btn::before { background: linear-gradient(#35506d 0%, #2f4964 49%, #283f58 50%, #2d4661 100%); border-color: #5b95d0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+[data-theme=dark] .btn:active:not(:disabled) { background: linear-gradient(#24384e, #1f3246); border-color: #4d86c6; }
+[data-theme=dark] .btn:disabled { color: #6c747e; border-color: #3e454e; background: #262a30; }
+[data-theme=dark] .btn:focus-visible, [data-theme=dark] .btn.default { border-color: #4d9bf0; box-shadow: inset 0 0 0 1px rgba(110,180,255,.35), 0 0 3px rgba(77,155,240,.6); }
+[data-theme=dark] .btn.danger::before { background: linear-gradient(#5a2c27, #4e231f 49%, #431c18 50%, #4b211c); border-color: #c0574a; }
+/* Farbige Schaltflächen (Primär/Grün) behalten ihre Farbe – etwas satter */
+[data-theme=dark] .btn.primary, [data-theme=dark] .btn.primary:hover:not(:disabled) { color: #fff; border-color: #1d4f78; background: linear-gradient(#5fa9ea 0%, #3a8ad6 49%, #1f6dbd 50%, #2c7fcf 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+[data-theme=dark] .btn.primary::before { background: linear-gradient(#7dbcf3 0%, #4c9ae3 49%, #2b7cd0 50%, #3d8ede 100%); border-color: #1d4f78; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3), 0 0 6px rgba(80,170,255,.5); }
+[data-theme=dark] .btn.green, [data-theme=dark] .btn.green:hover:not(:disabled) { color: #fff; border-color: #2a5c12; background: linear-gradient(#86c95e 0%, #57a92b 49%, #3d8a17 50%, #4f9f22 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+[data-theme=dark] .btn.green::before { background: linear-gradient(#9ddb75, #69bd3a 49%, #4a9c1f 50%, #5eb22c); border-color: #24500f; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3), 0 0 6px rgba(120,220,80,.45); }
+[data-theme=dark] .btn.green:disabled { color: #b9cdb0; background: #3c5233; border-color: #344a2c; }
+
+[data-theme=dark] .input, [data-theme=dark] .select, [data-theme=dark] .textarea {
+  background: var(--d-input); color: var(--d-text);
+  border-color: #4a535e #3c444e #3a424b #3c444e;
+}
+[data-theme=dark] .input:hover, [data-theme=dark] .select:hover, [data-theme=dark] .textarea:hover { border-color: #4d86c6 #3f6b98 #3f6b98 #3f6b98; }
+[data-theme=dark] .input:focus, [data-theme=dark] .select:focus, [data-theme=dark] .textarea:focus { border-color: #5b9be0; }
+[data-theme=dark] .input:disabled { background: #22262c; color: #6c747e; }
+[data-theme=dark] .input.invalid, [data-theme=dark] .textarea.invalid, [data-theme=dark] .select.invalid { border-color: #e0604f; background: #2a1b1a; }
+[data-theme=dark] .input::placeholder, [data-theme=dark] .textarea::placeholder, [data-theme=dark] .search-box input::placeholder { color: #6f7883; }
+[data-theme=dark] .select option { background: #20242a; color: var(--d-text); }
+[data-theme=dark] .search-box { background: var(--d-input); border-color: #4a535e; }
+[data-theme=dark] .search-box input { color: var(--d-text); }
+[data-theme=dark] .search-box:focus-within { border-color: #5b9be0; }
+[data-theme=dark] .check input { border-color: #6a737e; background: linear-gradient(135deg, #2b3037, #1b1f24); box-shadow: inset 0 0 0 1px #15181c; }
+[data-theme=dark] .check input:hover { border-color: #5b9be0; background: linear-gradient(135deg, #2c4762, #1e2f42); }
+[data-theme=dark] .check input:checked::after { border-color: #8fc8ff; }
+[data-theme=dark] .group-box { border-color: var(--d-line); box-shadow: none; }
+[data-theme=dark] .group-box > legend, [data-theme=dark] .group-box > .gb-title { color: #9cc9ff; background: var(--d-bg0); }
+[data-theme=dark] .progress { border-color: #4a535e; background: linear-gradient(#2a2f36, #22262c 50%, #1d2126 51%, #24282e); }
+[data-theme=dark] .link:hover { color: #9fd0ff; }
+[data-theme=dark] .tabs { border-bottom-color: #4a535e; }
+[data-theme=dark] .tab { border-color: #4a535e; color: var(--d-text); background: linear-gradient(#30363d, #2b3037 50%, #252a30 51%, #2a2f35); }
+[data-theme=dark] .tab:hover { background: linear-gradient(#33506f, #2c4762 50%, #263e57 51%, #2b4560); }
+[data-theme=dark] .tab.active { background: var(--d-bg0); border-bottom-color: var(--d-bg0); }
+
+/* Tabellen, Listen */
+[data-theme=dark] .list-table th { color: #a9b8ca; background: linear-gradient(#2a2f36, #252a30 50%, #22272c); border-bottom-color: var(--d-line); border-right-color: #30363e; }
+[data-theme=dark] .list-table th.sortable:hover { background: linear-gradient(#2e4258, #283a4e); border-right-color: #3f6b98; }
+[data-theme=dark] .list-table td { border-color: transparent; }
+[data-theme=dark] .status-bar { border-top-color: var(--d-line); background: linear-gradient(#24282e, #1e2227); color: #b6c2d0; }
+[data-theme=dark] .win-client ::-webkit-scrollbar-track, [data-theme=dark] .scroll::-webkit-scrollbar-track { background: #1a1d21; }
+[data-theme=dark] .win-client ::-webkit-scrollbar-thumb, [data-theme=dark] .scroll::-webkit-scrollbar-thumb { border-color: #4a535e; background: linear-gradient(to right, #3a414a, #333941 45%, #2d3239 50%, #30363d); box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+[data-theme=dark] .win-client ::-webkit-scrollbar-thumb:hover { border-color: #5b9be0; background: linear-gradient(to right, #34506d, #2c4560); }
+[data-theme=dark] .win-client ::-webkit-scrollbar-button:single-button { background-color: #24282e; }
+[data-theme=dark] .win-client ::-webkit-scrollbar-corner { background: #1a1d21; }
+[data-theme=dark] .win-client { scrollbar-color: #444c56 #1a1d21; }
+
+/* Meldungsfenster, Dialoge */
+[data-theme=dark] .msgbox-body { background: var(--d-bg0); }
+[data-theme=dark] .dialog-footer { background: #23272d; border-top-color: var(--d-line); }
+
+/* Allgemeine Texte */
+[data-theme=dark] .muted, [data-theme=dark] .field .hint, [data-theme=dark] .empty-state, [data-theme=dark] .price small,
+[data-theme=dark] .review-dl dt, [data-theme=dark] .stat-sub, [data-theme=dark] .bar-label, [data-theme=dark] .nav-item .ni-count { color: var(--d-muted); }
+[data-theme=dark] .field label { color: #cfd5dc; }
+[data-theme=dark] .err-text, [data-theme=dark] .field .ferr, [data-theme=dark] .req::after, [data-theme=dark] .avail.out { color: #ff8170; }
+[data-theme=dark] .ok-text, [data-theme=dark] .avail.ok, [data-theme=dark] .wz-step.done { color: var(--d-green); }
+[data-theme=dark] .info-bar { background: #2e2b1a; border-color: #5a5230; color: #eee7c4; }
+[data-theme=dark] .info-bar.blue { background: #1c2a3a; border-color: #2f4d70; color: #d4e6fa; }
+[data-theme=dark] .info-bar.red { background: #3a1f1c; border-color: #6e3730; color: #f6d6d1; }
+[data-theme=dark] .kbd { background: #2a2f36; border-color: #4a535e; color: var(--d-text); }
+
+/* ─────────── Explorer-Rahmen (Adressleiste, Befehlsleiste, Navigation) ─────────── */
+[data-theme=dark] .address-bar { background: rgba(18,21,25,.85); box-shadow: inset 0 1px 1px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.12); color: var(--d-text); }
+[data-theme=dark] .address-bar:hover { background: rgba(18,21,25,.95); }
+[data-theme=dark] .crumb::before { background: linear-gradient(#2d3f53, #24364a); border-color: #3f6b98; box-shadow: none; }
+[data-theme=dark] .crumb-sep { color: #aab4bf; }
+[data-theme=dark] .nav-bar .search-box { background: rgba(18,21,25,.9); border-color: rgba(255,255,255,.18); }
+[data-theme=dark] .cmd-bar { background: linear-gradient(#2a3037 0%, #252a31 48%, #20252b 50%, #23282e 100%); border-bottom-color: #3a424c; color: #cdd7e3; }
+[data-theme=dark] .cmd-btn { color: #cdd7e3; }
+[data-theme=dark] .cmd-btn::before { background: linear-gradient(#33475c, #2c3f53 50%, #27394b 51%, #2b3e51); border-color: #4a6e94; box-shadow: none; }
+[data-theme=dark] .cmd-btn:active, [data-theme=dark] .cmd-btn.pressed { border-color: #4d86c6; background: linear-gradient(#243649, #1f2f40); }
+[data-theme=dark] .cmd-btn:disabled { color: #66707b; }
+[data-theme=dark] .cmd-sep { background: #3a424c; box-shadow: 1px 0 0 #1b1e23; }
+[data-theme=dark] .nav-pane { background: var(--d-bg1); border-right-color: var(--d-line); }
+[data-theme=dark] .nav-group-title { color: #9cc9ff; }
+[data-theme=dark] .nav-item { color: var(--d-text); }
+[data-theme=dark] .nav-item::before, [data-theme=dark] .category-tile::before, [data-theme=dark] .drive-tile::before, [data-theme=dark] .file-tile::before,
+[data-theme=dark] .icon-cell::before, [data-theme=dark] .wp-tile::before, [data-theme=dark] .color-swatch::before, [data-theme=dark] .edition-opt::before,
+[data-theme=dark] .stat-box::before, [data-theme=dark] .bell-item::before, [data-theme=dark] .product-card::before { box-shadow: none; }
+
+/* ─────────── Minecraft Store ─────────── */
+[data-theme=dark] .store-content, [data-theme=dark] .printable { background: var(--d-bg0); }
+[data-theme=dark] .store-loading, [data-theme=dark] .pc-name, [data-theme=dark] .tl-current b, [data-theme=dark] .os-num,
+[data-theme=dark] .code-value.big, [data-theme=dark] .od-num, [data-theme=dark] .bar-val, [data-theme=dark] .wz-step.current { color: #9cc9ff; }
+[data-theme=dark] .pc-name:hover { color: #c3e0ff; }
+[data-theme=dark] .section-title::after, [data-theme=dark] .explorer-group::after { background: linear-gradient(to right, #3a4a5c, transparent); }
+[data-theme=dark] .hero { border-color: #2f4d70; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+[data-theme=dark] .hero p { color: #e6eef8; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+[data-theme=dark] .step-card, [data-theme=dark] .product-card, [data-theme=dark] .product-card:hover,
+[data-theme=dark] .edition-opt, [data-theme=dark] .category-tile { border-color: var(--d-line); background: linear-gradient(#262b32, #22262c); color: var(--d-text); }
+[data-theme=dark] .category-tile b, [data-theme=dark] .cp-cat-title { color: #84d862; }
+[data-theme=dark] .cp-cat-title:hover { color: #a6ea88; }
+[data-theme=dark] .price b, [data-theme=dark] .pd-total b, [data-theme=dark] .cs-total span:last-child, [data-theme=dark] .review-table tfoot b, [data-theme=dark] .price-edit { color: var(--d-green); }
+[data-theme=dark] .avail.farm { color: #6db3ff; }
+[data-theme=dark] .avail.low { color: #f0a640; }
+[data-theme=dark] .pd-desc, [data-theme=dark] .pd-facts, [data-theme=dark] .cs-row { color: #c9d0d8; }
+[data-theme=dark] .spin-btns button { border-color: #4a535e; background: linear-gradient(#353b43, #2a2f35); color: var(--d-text); }
+[data-theme=dark] .spin-btns button:hover:not(:disabled) { border-color: #5b9be0; background: linear-gradient(#34506d, #2a4259); }
+[data-theme=dark] .quick-qty .cmd-btn { border-color: #3a424c; }
+[data-theme=dark] .cart-table-wrap { border-color: var(--d-line); }
+[data-theme=dark] .cart-summary, [data-theme=dark] .os-head, [data-theme=dark] .account-card, [data-theme=dark] .login-tile {
+  border-color: #34495f; background: linear-gradient(#25303c, #1f2731); box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+[data-theme=dark] .cs-total { border-top-color: #34495f; }
+[data-theme=dark] .wizard-head { border-bottom-color: var(--d-line); }
+[data-theme=dark] .wz-step { color: #77818c; }
+[data-theme=dark] .wz-step + .wz-step::before { background: #3a424c; }
+[data-theme=dark] .wz-dot { background: #2a2f36; border-color: #46505c; color: #8a949e; }
+[data-theme=dark] .review-table td, [data-theme=dark] .shop-msg, [data-theme=dark] .history-list li { border-bottom-color: #2c3239; }
+[data-theme=dark] .confirm-head { border-color: #3b5e2c; background: linear-gradient(#22301d, #1c2818); }
+[data-theme=dark] .code-value { background: #15181c; border-color: #34495f; color: var(--d-text); }
+[data-theme=dark] .timeline li::before { background: #39414b; }
+[data-theme=dark] .tl-dot { color: #7f8993; background: #262b31; border-color: #46505c; }
+[data-theme=dark] .tl-todo b { color: #77818c; }
+[data-theme=dark] .ribbon { color: #3d2800; }
+/* Minecraft-Inventarfelder bleiben wie im Spiel, nur die helle Kante wird gedämpft */
+[data-theme=dark] .mc-slot, [data-theme=dark] .pc-slot, [data-theme=dark] .hero-slot { box-shadow: 0 0 0 1px #2a2a2a; border-color: #232323 #a9a9a9 #a9a9a9 #232323; background-color: #747474; }
+[data-theme=dark] .pc-slot:hover { background-color: #858585; }
+[data-theme=dark] .mc-hotbar, [data-theme=dark] .hero-items { background: #9a9a9a; border-color: #cfcfcf #3d3d3d #3d3d3d #cfcfcf; }
+
+/* ─────────── Computer, Systemsteuerung, Konten ─────────── */
+[data-theme=dark] .details-pane { border-top-color: var(--d-line); background: linear-gradient(#242a31, #1e2329); }
+[data-theme=dark] .cp-side { background: linear-gradient(to bottom, #1f2a36, #1e2228 260px, var(--d-bg1)); border-right-color: var(--d-line); }
+[data-theme=dark] .cp-side .cp-current { color: #fff; }
+[data-theme=dark] .cp-side-sep { background: var(--d-line); }
+[data-theme=dark] .form-table td:first-child { color: var(--d-muted); }
+[data-theme=dark] .about-banner { border-bottom-color: #061a36; }
+[data-theme=dark] .file-tile, [data-theme=dark] .drive-tile { color: var(--d-text); }
+
+/* ─────────── Shop-Verwaltung ─────────── */
+[data-theme=dark] .admin-main { background: var(--d-bg0); }
+[data-theme=dark] .page-toolbar, [data-theme=dark] .orders-toolbar { border-bottom-color: var(--d-line); background: linear-gradient(#252a30, #20242a); }
+[data-theme=dark] .admin-login { background: linear-gradient(#20242a, #1b1e23); }
+[data-theme=dark] .stat-box, [data-theme=dark] .stat-box:not(:disabled):hover { border-color: var(--d-line); background: linear-gradient(#272c33, #22262c); box-shadow: none; color: inherit; }
+[data-theme=dark] .stat-label { color: #a9b8ca; }
+[data-theme=dark] .stat-value { color: #f2f5f8; }
+[data-theme=dark] .bar-label { border-top-color: #3a424c; }
+[data-theme=dark] .order-detail { border-left-color: var(--d-line); background: linear-gradient(#212831, var(--d-bg0) 120px); }
+[data-theme=dark] .od-head { border-bottom-color: var(--d-line); }
+[data-theme=dark] .inactive-row td { color: #6c747e; }
+[data-theme=dark] .price-edit:hover { border-color: #4a535e; background: var(--d-input); }
+[data-theme=dark] .icon-picker { border-color: var(--d-line); background: #191c20; }
+[data-theme=dark] .bell-drop { background: #1f2329; border-color: #4a5563; color: var(--d-text); }
+[data-theme=dark] .bell-head, [data-theme=dark] .bell-foot { background: linear-gradient(#272c33, #21252b); border-color: var(--d-line); }
+[data-theme=dark] .bell-item + .bell-item { border-top-color: #2c3239; }
+[data-theme=dark] .bell-item.unread, [data-theme=dark] .bell-item.unread:hover { background: linear-gradient(#22303f, #1e2935); }
+[data-theme=dark] .bell-item.big { border-color: var(--d-line); }
+
+/* Neue Elemente der Sprach-/Designauswahl */
+[data-theme=dark] .theme-tile, [data-theme=dark] .lang-opt { border-color: var(--d-line); background: linear-gradient(#262b32, #22262c); color: var(--d-text); }
+[data-theme=dark] .theme-tile.selected, [data-theme=dark] .lang-opt.selected { border-color: var(--sel-border); background: var(--sel-bg); }
+[data-theme=dark] .lang-row:hover { background: linear-gradient(#2d3f53, #24364a); border-color: #3f6b98; }
+[data-theme=dark] .lang-sep { background: var(--d-line); }
+
+/* Weiche Überblendung beim Umschalten */
+.theme-anim, .theme-anim * { transition: background-color .25s ease, color .25s ease, border-color .25s ease !important; }
+[data-theme=dark] { --ua-head: linear-gradient(#262c34, #1f2329); }
