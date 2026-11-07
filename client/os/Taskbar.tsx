@@ -301,8 +301,8 @@ export function Taskbar({ startOpen, onStart }: { startOpen: boolean; onStart: (
             </button>
           )}
           <button className="tray-lang" title={tr('Eingabesprache: Deutsch (Deutschland)', 'Input language: English (United States)')} onPointerDown={(e) => e.stopPropagation()} onClick={() => setPopup(popup === 'lang' ? null : 'lang')}>{lang.toUpperCase()}</button>
-          {!xp && <button className="tray-icon" title={settings.dark ? tr('Dunkelmodus ausschalten', 'Turn off dark mode') : tr('Dunkelmodus einschalten', 'Turn on dark mode')} aria-pressed={settings.dark} onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => { setDark(!settings.dark); playChime('click'); }}>{settings.dark ? <SunIcon /> : <MoonIcon />}</button>}
+          <button className="tray-icon" title={settings.dark ? tr('Dunkelmodus ausschalten', 'Turn off dark mode') : tr('Dunkelmodus einschalten', 'Turn on dark mode')} aria-pressed={settings.dark} onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => { setDark(!settings.dark); playChime('click'); }}>{settings.dark ? <SunIcon /> : <MoonIcon />}</button>
           <button className="tray-icon hide-mobile" title={tr("Wartungscenter: Keine Probleme gefunden", "Action Center: No issues found")} onPointerDown={(e) => e.stopPropagation()}
             onClick={() => openApp('about')}><FlagIcon /></button>
           <button className="tray-icon" title={online ? tr("Internetzugriff", "Internet access") : tr("Keine Verbindung", "No connection")} onPointerDown={(e) => e.stopPropagation()} onClick={() => setPopup(popup === 'network' ? null : 'network')}>

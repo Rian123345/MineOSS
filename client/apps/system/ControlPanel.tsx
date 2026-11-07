@@ -117,15 +117,15 @@ export function ControlPanelApp({ props, nonce }: AppProps) {
                   </button>
                 ))}
               </div>
-              {settings.skin !== 'xp' && (
+              {(
                 <>
                   <h2 className="h-sub">{tr('Farbmodus', 'Color mode')}</h2>
                   <div className="theme-grid" role="radiogroup" aria-label={tr('Farbmodus', 'Color mode')}>
-                    {([[false, tr('Hell', 'Light'), tr('Klassisches Windows 7', 'Classic Windows 7')], [true, tr('Dunkel', 'Dark'), tr('Schont die Augen am Abend', 'Easier on the eyes at night')]] as const).map(([dark, name, hint]) => (
+                    {([[false, tr('Hell', 'Light'), settings.skin === 'xp' ? tr('Klassisches Blau', 'Classic blue') : tr('Klassisches Windows 7', 'Classic Windows 7')], [true, tr('Dunkel', 'Dark'), tr('Schont die Augen am Abend', 'Easier on the eyes at night')]] as const).map(([dark, name, hint]) => (
                       <button key={name} role="radio" aria-checked={settings.dark === dark} className={cls('theme-tile', settings.dark === dark && 'selected')} onClick={() => set({ dark })}>
-                        <span className={cls('theme-thumb', dark && 'dark')} style={{ backgroundImage: `url("${WALLPAPER_URL}")` }}>
+                        <span className={cls('theme-thumb', dark && 'dark', settings.skin === 'xp' && 'xp')} style={{ backgroundImage: `url("${wallpaperFor(settings)}")` }}>
                           <span className="tt-win"><span className="tt-bar" /><span className="tt-body"><i /><i /><i /></span></span>
-                          <span className="tt-task" />
+                          <span className="tt-task"><span className="tt-start" /></span>
                         </span>
                         <b>{name}</b><small className="muted">{hint}</small>
                       </button>

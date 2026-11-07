@@ -21,11 +21,13 @@ export interface SessionState {
   unread: number;
   notifications: AdminNotification[];
   live: 'off' | 'connecting' | 'live';
+  /** Ungelesene MineChat-Nachrichten (Spieler: Antworten vom Support, Admins: neue Anfragen) */
+  chatUnread: number;
 }
 
 export const sessionStore = createStore<SessionState>({
   checked: false, user: null, isAdmin: false, noAdmin: false, setupAllowed: false,
-  isLocal: false, error: null, unread: 0, notifications: [], live: 'off',
+  isLocal: false, error: null, unread: 0, notifications: [], live: 'off', chatUnread: 0,
 });
 
 type Listener = (event: string, data: any) => void;
@@ -47,7 +49,8 @@ export async function checkSession(): Promise<SessionState> {
     }
     const isAdmin = s.user?.role === 'admin';
     sessionStore.set((st) => ({ ...st, checked: true, ...s, isAdmin, error: null }));
-    if (isAdmin) { void loadNotifications(); connectLive(); } else disconnectLive();
+    if (isAdmin) { void loadNotifications(); connectLive(); disconnectUserLive(); } else { disconnectLive(); if (s.user) connectUserLive(); else disconnectUserLive(); }
+    if (s.user) void refreshChatUnread();
   } catch (e: any) {
     const error = e?.status === 404
       ? OUTDATED()
@@ -74,13 +77,15 @@ export async function register(username: string, password: string, edition: 'jav
 export async function logout() {
   try { await post('/api/auth/logout'); } catch { /* egal */ }
   disconnectLive();
-  sessionStore.set((st) => ({ ...st, user: null, isAdmin: false, notifications: [], unread: 0 }));
+  disconnectUserLive();
+  sessionStore.set((st) => ({ ...st, user: null, isAdmin: false, notifications: [], unread: 0, chatUnread: 0 }));
 }
 
 /** Wird aufgerufen, wenn eine Anfrage mit 401 scheitert (Sitzung abgelaufen / gesperrt). */
 export function sessionExpired() {
   if (!sessionStore.get().user) return;
   disconnectLive();
+  disconnectUserLive();
   sessionStore.set((st) => ({ ...st, user: null, isAdmin: false }));
 }
 setUnauthorizedHandler(sessionExpired);
@@ -112,10 +117,69 @@ function connectLive() {
   es.addEventListener('order.deleted', (ev) => emit('order.deleted', JSON.parse((ev as MessageEvent).data)));
   es.addEventListener('catalog.changed', () => emit('catalog.changed', {}));
   es.addEventListener('notifications.read', () => void loadNotifications());
+  es.addEventListener('support.message', (ev) => {
+    const data = JSON.parse((ev as MessageEvent).data);
+    emit('support.message', data);
+    void refreshChatUnread();
+    if (data.message?.sender === 'user') {
+      playChime('notify');
+      showBalloon({
+        title: tr(`MineChat: ${data.thread.userName}`, `MineChat: ${data.thread.userName}`),
+        text: String(data.message.body).slice(0, 140),
+        icon: 'info',
+        action: () => openChat?.({ threadId: data.thread.id }),
+      });
+    }
+  });
+  es.addEventListener('support.read', (ev) => { emit('support.read', JSON.parse((ev as MessageEvent).data)); void refreshChatUnread(); });
   es.onerror = () => {
     sessionStore.set((st) => ({ ...st, live: 'connecting' }));
     void get<AuthStatus>('/api/auth/status').then((s) => { if (s.user?.role !== 'admin') sessionExpired(); }).catch(() => {});
   };
+}
+
+/* ─────────── MineChat: Live-Kanal für Spieler und Ungelesen-Zähler ─────────── */
+
+let userEs: EventSource | null = null;
+let openChat: ((props: Record<string, any>) => void) | null = null;
+export function registerChatOpener(fn: (props: Record<string, any>) => void) { openChat = fn; }
+
+export async function refreshChatUnread() {
+  try {
+    const s = sessionStore.get();
+    const n = s.isAdmin
+      ? (await get<{ unread: number }>('/api/admin/support/threads?status=open')).unread
+      : (await get<{ unread: number }>('/api/support/unread')).unread;
+    sessionStore.set((st) => ({ ...st, chatUnread: n }));
+  } catch { /* egal */ }
+}
+
+/** Ein offenes MineChat-Fenster meldet hier, dass der Spieler die Nachrichten gesehen hat */
+export function clearChatUnread() { sessionStore.set((st) => (st.chatUnread ? { ...st, chatUnread: 0 } : st)); }
+
+function connectUserLive() {
+  if (userEs) return;
+  userEs = new EventSource('/api/me/events');
+  userEs.addEventListener('support.message', (ev) => {
+    const data = JSON.parse((ev as MessageEvent).data);
+    emit('support.message', data);
+    if (data.message?.sender === 'admin') {
+      sessionStore.set((st) => ({ ...st, chatUnread: data.unread ?? st.chatUnread + 1 }));
+      playChime('notify');
+      showBalloon({
+        title: tr('Neue Antwort vom Support-Team', 'New reply from the support team'),
+        text: String(data.message.body).slice(0, 140),
+        icon: 'info',
+        action: () => openChat?.({ contact: 'team' }),
+      });
+    }
+  });
+  userEs.onerror = () => { /* Browser verbindet sich selbst neu */ };
+}
+
+function disconnectUserLive() {
+  userEs?.close();
+  userEs = null;
 }
 
 function disconnectLive() {

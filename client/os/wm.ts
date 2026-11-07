@@ -1,6 +1,6 @@
 import { createStore } from '../lib/store';
 
-export type AppId = 'store' | 'admin' | 'computer' | 'controlpanel' | 'useraccounts' | 'msgbox' | 'about';
+export type AppId = 'store' | 'chat' | 'admin' | 'computer' | 'controlpanel' | 'useraccounts' | 'msgbox' | 'about';
 
 export interface Rect { x: number; y: number; w: number; h: number }
 

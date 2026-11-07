@@ -6,6 +6,7 @@ import './styles/admin.css';
 import './styles/polish.css';
 import './styles/dark.css';
 import './styles/xp.css';
+import './styles/chat.css';
 
 // Kontextmenü des Browsers im gesamten OS unterdrücken (außer in Eingabefeldern)
 document.addEventListener('contextmenu', (e) => {

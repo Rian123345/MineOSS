@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { db, tx, nowIso, setSetting } from '../db';
+import { db, tx, nowIso, setSetting, getSetting } from '../db';
 import { config } from '../config';
 import { HttpError, readJson, type Router, type Ctx } from '../http';
 import { requireAdmin, adminCount, hashPassword } from '../auth';
@@ -34,6 +34,7 @@ function getDiscordSettings(ctx: Ctx) {
     maskedUrl: d.webhookUrl ? maskUrl(d.webhookUrl) : null,
     mention: d.mention,
     notifyStatus: d.notifyStatus,
+    notifySupport: getSetting('discord_notify_support') !== '0',
     fromEnv: d.fromEnv,
   };
 }
@@ -44,6 +45,7 @@ async function putDiscordSettings(ctx: Ctx) {
   if (input.webhookUrl !== undefined) setSetting('discord_webhook_url', input.webhookUrl ?? '');
   setSetting('discord_mention', input.mention);
   setSetting('discord_notify_status', input.notifyStatus ? '1' : '0');
+  if (input.notifySupport !== undefined) setSetting('discord_notify_support', input.notifySupport ? '1' : '0');
   return getDiscordSettings(ctx);
 }
 

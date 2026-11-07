@@ -29,6 +29,8 @@ import { registerPublicRoutes } from './routes/public';
 import { registerAdminRoutes } from './routes/admin';
 import { adminCount } from './auth';
 import { registerAccountRoutes, ensureSetupCode } from './accounts';
+import { registerSupportRoutes } from './routes/support';
+import { registerAssistantRoutes } from './assistant';
 import { BUILD_ID } from './version';
 import { db } from './db';
 
@@ -38,6 +40,8 @@ const router = new Router();
 registerAccountRoutes(router);
 registerPublicRoutes(router);
 registerAdminRoutes(router);
+registerSupportRoutes(router);
+registerAssistantRoutes(router);
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',

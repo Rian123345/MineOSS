@@ -60,11 +60,26 @@ Unter *Systemsteuerung → Anpassung → Design* kannst du zwischen **Aero** (Wi
 - das zweispaltige Startmenü und die Dialoge „Ausschalten“ und „Abmelden“, bei denen der Desktop grau wird,
 - eigene XP-artige Klänge für Hochfahren, Anmelden, Abmelden, Herunterfahren, Hinweise und Fehlermeldungen.
 
-Nur im Luna-Design kannst du zwischen dem **Bliss**-Hintergrund und dem SenorPollo-Bild wechseln. Statt des Windows-Logos zeigt MineOS überall sein eigenes Logo. Den Dunkelmodus gibt es nur im Aero-Design.
+Nur im Luna-Design kannst du zwischen dem **Bliss**-Hintergrund und dem SenorPollo-Bild wechseln. Statt des Windows-Logos zeigt MineOS überall sein eigenes Logo. Der Dunkelmodus funktioniert auch in Luna: Fenster, Taskleiste und Startmenü werden dann graphitgrau, der Start-Knopf bleibt grün.
 
 **Eigene Klänge:** Die XP-Klänge erzeugt MineOS selbst. Möchtest du andere Sounddateien verwenden, lege sie als MP3, WAV oder OGG in `client/assets/sounds/xp/` und baue neu, z. B. `startup.mp3`, `logon.wav` oder `notify.ogg`. Alle Namen stehen in der Datei `LIESMICH.txt` in diesem Ordner.
 
 Hinweis: Browser spielen Töne erst nach dem ersten Klick oder Tastendruck ab. Wer schon angemeldet ist und die Seite neu lädt, hört den Startklang deshalb nicht.
+
+### MineChat – Hilfe-Chat mit KI-Assistent
+
+**MineChat** liegt neben dem Minecraft Store auf dem Desktop, in der Taskleiste und im Startmenü (auch „Hilfe und Support“ öffnet ihn). Darin gibt es zwei Kontakte:
+
+- **MineBot** ist ein KI-Assistent für alles rund um Minecraft: Farmen, Redstone, Verzauberungen, Mobs, Crafting und Fragen zum Shop. Er kennt die aktuellen Kategorien und Preise. Unter jeder Antwort steht „Hat nicht geholfen?“, damit wird die Frage direkt an das Support-Team weitergereicht.
+- **Support-Team** schreibt einem Admin. Admins sehen in MineChat die Liste „Anfragen der Spieler“, antworten dort und markieren Anfragen als erledigt. Neue Nachrichten kommen sofort an, mit Sprechblase, Ton und Zähler am Symbol. Die Chats liegen in der Datenbank, auf Render also auf der Festplatte.
+
+Bei einer neuen Anfrage (oder nach über einer Stunde Ruhe) schickt MineOS eine Discord-Nachricht. Das lässt sich in den Discord-Einstellungen abschalten.
+
+**KI einschalten:** MineBot nutzt Claude von Anthropic.
+1. Auf [console.anthropic.com](https://console.anthropic.com) ein Konto anlegen, unter *Billing* etwas Guthaben aufladen (z. B. 5 $) und unter *API Keys* einen Schlüssel erstellen (beginnt mit `sk-ant-`).
+2. In MineOS *Shop-Verwaltung → Einstellungen → KI-Assistent* öffnen, den Schlüssel einfügen und auf **Speichern & testen** klicken.
+
+Empfohlen ist das Modell **Claude Haiku**: Eine Antwort kostet meist deutlich unter 0,1 Cent. Damit niemand dein Guthaben leer fragt, gibt es ein Limit pro Spieler und Stunde (Standard 30). Der Schlüssel bleibt auf dem Server und wird nie an Browser geschickt. Alternativ kannst du ihn bei Render als Umgebungsvariable `ANTHROPIC_API_KEY` eintragen, das Modell optional mit `MINEOS_AI_MODEL`. Der Verlauf mit MineBot wird nur im Browser des Spielers gespeichert.
 
 ### Minecraft-Texturen
 

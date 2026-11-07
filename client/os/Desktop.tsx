@@ -3,7 +3,8 @@ import { useStore, settingsStore } from '../lib/store';
 import { openContextMenu } from './ContextMenu';
 import { openApp } from './apps';
 import { wm, msgbox } from './wm';
-import { StoreIcon, ControlPanelIcon } from './icons';
+import { StoreIcon, ControlPanelIcon, ChatIcon } from './icons';
+import { sessionStore } from './session';
 import { loadCatalog } from '../lib/catalog';
 import { cls } from '../lib/format';
 import { prefsStore } from './prefs';
@@ -19,6 +20,7 @@ export function Desktop() {
   const [flash, setFlash] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
+  const chatUnread = useStore(sessionStore).chatUnread;
   const icons: DeskIcon[] = [
     {
       id: 'store',
@@ -29,6 +31,18 @@ export function Desktop() {
         title: tr("Eigenschaften von Minecraft Store", "Minecraft Store Properties"),
         heading: 'Minecraft Store',
         text: tr("Typ: Anwendung\nBeschreibung: Bestelle Minecraft-Items, Blöcke und Ressourcen.\nVersion: 1.0.0\nHerausgeber: MineOS", "Type: Application\nDescription: Order Minecraft items, blocks and resources.\nVersion: 1.0.0\nPublisher: MineOS"),
+        icon: 'info',
+      }),
+    },
+    {
+      id: 'chat',
+      label: 'MineChat',
+      icon: (s) => <span style={{ position: 'relative', display: 'inline-block' }}><ChatIcon size={s} />{chatUnread > 0 && <span className="desk-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>}</span>,
+      open: () => openApp('chat'),
+      props: () => void msgbox({
+        title: tr('Eigenschaften von MineChat', 'MineChat Properties'),
+        heading: 'MineChat',
+        text: tr('Typ: Anwendung\nBeschreibung: Hilfe-Chat mit dem Support-Team und dem KI-Assistenten MineBot.\nVersion: 1.0.0\nHerausgeber: MineOS', 'Type: Application\nDescription: Help chat with the support team and the AI assistant MineBot.\nVersion: 1.0.0\nPublisher: MineOS'),
         icon: 'info',
       }),
     },

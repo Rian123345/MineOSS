@@ -183,6 +183,28 @@ const MIGRATIONS: (string | (() => void))[] = [
     db.exec('DELETE FROM products; DELETE FROM categories;');
     insertStartCategories(db);
   },
+  // v6 – MineChat: Hilfe-Chat zwischen Spielern und Admins
+  `
+  CREATE TABLE support_threads (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    status          TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','closed')),
+    user_unread     INTEGER NOT NULL DEFAULT 0,
+    admin_unread    INTEGER NOT NULL DEFAULT 0,
+    last_message_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  );
+  CREATE INDEX idx_support_threads_last ON support_threads(last_message_at DESC);
+  CREATE TABLE support_messages (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_id  INTEGER NOT NULL REFERENCES support_threads(id) ON DELETE CASCADE,
+    sender     TEXT NOT NULL CHECK (sender IN ('user','admin','system')),
+    author_id  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    body       TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+  );
+  CREATE INDEX idx_support_messages_thread ON support_messages(thread_id, id);
+  `,
 ];
 
 function migrate() {

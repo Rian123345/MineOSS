@@ -74,6 +74,22 @@ export function StoreIcon({ size = 48 }: P) {
   );
 }
 
+/** MineChat: zwei Sprechblasen (Spieler & Support) */
+export function ChatIcon({ size = 32 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32">
+      <defs>
+        <linearGradient id="chB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#8fd3ff" /><stop offset="1" stopColor="#2a78d0" /></linearGradient>
+        <linearGradient id="chG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#c9ff9a" /><stop offset="1" stopColor="#3fa62a" /></linearGradient>
+      </defs>
+      <path d="M3 4.5h17a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4.5 3.8V17.5H3a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z" fill="url(#chB)" stroke="#164f93" strokeWidth="1" />
+      <path d="M12 12h16a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-1.5v4l-4.8-4H12a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="url(#chG)" stroke="#23700f" strokeWidth="1" />
+      <ellipse cx="11" cy="6.8" rx="8" ry="1.8" fill="#fff" opacity=".45" />
+      <rect x="14.5" y="17" width="3" height="3" fill="#1d5c0c" /><rect x="19.5" y="17" width="3" height="3" fill="#1d5c0c" /><rect x="24.5" y="17" width="3" height="3" fill="#1d5c0c" />
+    </svg>
+  );
+}
+
 export function ComputerIcon({ size = 32 }: P) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32">

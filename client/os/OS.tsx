@@ -10,7 +10,7 @@ import { BootScreen, WelcomeScreen, ShutdownScreen, OffScreen, LockScreen, BootS
 import { StartMenuXP, XpSessionDialog } from './StartMenuXP';
 import { LogonScreen } from './Logon';
 import { wallpaperFor } from './wallpapers';
-import { checkSession, sessionStore, registerOrderOpener, logout, playChime } from './session';
+import { checkSession, sessionStore, registerOrderOpener, registerChatOpener, logout, playChime } from './session';
 import { loadCatalog } from '../lib/catalog';
 import { openApp, APPS } from './apps';
 import { tr, useLang } from '../lib/i18n';
@@ -22,6 +22,7 @@ function handleHash() {
   if (!h) return;
   const m = /^admin(?:\/orders\/(\d+))?/.exec(h);
   if (m && sessionStore.get().isAdmin) openApp('admin', m[1] ? { page: 'orders', orderId: Number(m[1]) } : {});
+  if (h === 'chat') openApp('chat');
   const t = /^track(?:=(MC-[A-Z0-9]{6}))?/i.exec(h);
   if (t) openApp('store', { view: { kind: 'track', orderNumber: t[1]?.toUpperCase() } });
   history.replaceState(null, '', location.pathname);
@@ -66,7 +67,7 @@ export function OS() {
       setTimeout(() => root.classList.remove('theme-anim'), 350);
     }
     themeFirst.current = false;
-    const dark = settings.dark && settings.skin !== 'xp'; // XP kennt keinen Dunkelmodus
+    const dark = settings.dark;
     root.dataset.theme = dark ? 'dark' : 'light';
     root.dataset.skin = settings.skin;
     root.style.colorScheme = dark ? 'dark' : 'light';
@@ -83,6 +84,7 @@ export function OS() {
   useEffect(() => {
     void checkSession();
     registerOrderOpener((id) => openApp('admin', { page: 'orders', orderId: id }));
+    registerChatOpener((p) => openApp('chat', p));
     const onResize = () => wm.clampAll();
     window.addEventListener('resize', onResize);
     window.addEventListener('hashchange', handleHash);

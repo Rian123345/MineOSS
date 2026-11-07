@@ -34,12 +34,26 @@ const discord = http.createServer(async (req, res) => {
 
 await new Promise<void>((r) => discord.listen(0, '127.0.0.1', () => r()));
 
+// ── Claude-API-Attrappe (KI-Assistent) ──
+const aiHits: { headers: http.IncomingHttpHeaders; body: any }[] = [];
+const claude = http.createServer(async (req, res) => {
+  const body = JSON.parse(await readBody(req) || '{}');
+  aiHits.push({ headers: req.headers, body });
+  if (req.headers['x-api-key'] !== 'sk-ant-test-0123456789abcdefghijklmn') {
+    res.writeHead(401, { 'Content-Type': 'application/json' }); res.end('{"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}'); return;
+  }
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ id: 'msg_1', type: 'message', role: 'assistant', stop_reason: 'end_turn', content: [{ type: 'text', text: 'Für eine Eisenfarm brauchst du **Dorfbewohner** und einen Zombie.' }] }));
+});
+await new Promise<void>((r) => claude.listen(0, '127.0.0.1', () => r()));
+
 const server = spawn(process.execPath, ['--import', 'tsx', '--disable-warning=ExperimentalWarning', 'server/index.ts'], {
   cwd: root,
   env: {
     ...process.env, PORT: String(PORT), HOST: '127.0.0.1', DATA_DIR: dataDir, PUBLIC_URL: BASE,
     DISCORD_WEBHOOK_URL: `http://127.0.0.1:${(discord.address() as any).port}/api/webhooks/1/test`,
     DISCORD_NOTIFY_STATUS: 'true', ORDER_RATE_LIMIT: '12',
+    ANTHROPIC_BASE_URL: `http://127.0.0.1:${(claude.address() as any).port}`, ANTHROPIC_API_KEY: '',
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
@@ -225,6 +239,51 @@ try {
   const ds = await api(admin, 'GET', '/api/admin/settings/discord');
   check('Webhook nur maskiert sichtbar', ds.data.configured && !JSON.stringify(ds.data).includes('/api/webhooks/1/test'));
 
+  console.log('\nMineChat: Hilfe-Chat');
+  const { client: steve } = await registerUser('Steve_Help', 'steve-passwort', 'java', { 'X-Forwarded-For': '5.6.7.8' });
+  check('Leerer Chat am Anfang', (await api(steve, 'GET', '/api/support/thread')).data.thread === null);
+  check('Leere Nachricht abgelehnt', (await api(steve, 'POST', '/api/support/messages', { body: '   ' })).status === 400);
+  const hooksBefore = webhookHits.length;
+  const sm = await api(steve, 'POST', '/api/support/messages', { body: 'Hallo, wann kommt meine Bestellung MC-ABC123?' });
+  check('Spieler schreibt dem Support', sm.status === 201 && sm.data.thread.adminUnread === 1);
+  await sleep(300);
+  check('Discord-Hinweis zur neuen Anfrage', webhookHits.length > hooksBefore && JSON.stringify(webhookHits.at(-1)).includes('Steve'));
+  check('Fremde sehen keine Admin-Chats', (await api(steve, 'GET', '/api/admin/support/threads')).status === 403);
+  const threads = await api(admin, 'GET', '/api/admin/support/threads?status=open');
+  const th = threads.data.threads.find((t: any) => t.userName === 'Steve_Help');
+  check('Admin sieht Anfrage mit Ungelesen-Zähler', !!th && threads.data.unread >= 1 && th.lastMessage.includes('MC-ABC123'));
+  const opened = await api(admin, 'GET', `/api/admin/support/threads/${th.id}`);
+  check('Admin öffnet Chat → gelesen', opened.data.thread.adminUnread === 0 && opened.data.messages.length === 1);
+  const rep = await api(admin, 'POST', `/api/admin/support/threads/${th.id}/messages`, { body: 'Heute Abend um 18 Uhr am Spawn!' });
+  check('Admin antwortet', rep.status === 201 && rep.data.message.sender === 'admin');
+  check('Spieler hat 1 ungelesene Antwort', (await api(steve, 'GET', '/api/support/unread')).data.unread === 1);
+  const mine2 = await api(steve, 'GET', '/api/support/thread');
+  check('Spieler sieht Verlauf, danach gelesen', mine2.data.messages.length === 2 && mine2.data.messages[1].authorName === 'Owner' && (await api(steve, 'GET', '/api/support/unread')).data.unread === 0);
+  const closed = await api(admin, 'PATCH', `/api/admin/support/threads/${th.id}`, { status: 'closed' });
+  check('Als erledigt markieren', closed.data.thread.status === 'closed');
+  await api(steve, 'POST', '/api/support/messages', { body: 'Danke, noch eine Frage!' });
+  check('Neue Nachricht öffnet den Chat wieder', (await api(admin, 'GET', `/api/admin/support/threads/${th.id}`)).data.thread.status === 'open');
+
+  console.log('\nMineBot (KI-Assistent)');
+  check('KI ohne Schlüssel: ausgeschaltet', (await api(steve, 'GET', '/api/assistant/status')).data.enabled === false);
+  check('KI ohne Schlüssel: verständliche Meldung', (await api(steve, 'POST', '/api/assistant/chat', { messages: [{ role: 'user', content: 'Hi' }] })).status === 503);
+  check('Falscher Schlüssel-Aufbau abgelehnt', (await api(admin, 'PUT', '/api/admin/settings/ai', { enabled: true, model: 'claude-haiku-5-5', limitPerHour: 3, apiKey: 'falsch' })).status === 400);
+  const aiSet = await api(admin, 'PUT', '/api/admin/settings/ai', { enabled: true, model: 'claude-haiku-5-5', limitPerHour: 3, apiKey: 'sk-ant-test-0123456789abcdefghijklmn' });
+  check('Schlüssel speichern, nur Endung sichtbar', aiSet.status === 200 && aiSet.data.hasKey && aiSet.data.keyHint === '…klmn' && !JSON.stringify(aiSet.data).includes('0123456789'));
+  check('Spieler sieht keine KI-Einstellungen', (await api(steve, 'GET', '/api/admin/settings/ai')).status === 403);
+  check('KI ist jetzt an', (await api(steve, 'GET', '/api/assistant/status')).data.enabled === true);
+  const ask = await api(steve, 'POST', '/api/assistant/chat', { lang: 'de', messages: [{ role: 'assistant', content: 'alt' }, { role: 'user', content: 'Wie baue ich eine Eisenfarm?' }] });
+  const hit = aiHits.at(-1)!;
+  check('MineBot antwortet', ask.status === 200 && ask.data.reply.includes('Eisenfarm'));
+  check('Anfrage an Claude korrekt (Version, Modell, Verlauf beginnt mit Spieler)', hit.headers['anthropic-version'] === '2023-06-01' && hit.body.model === 'claude-haiku-5-5' && hit.body.messages.length === 1 && hit.body.messages[0].role === 'user');
+  check('Systemanweisung kennt Shop, Preise und Spieler', hit.body.system.includes('Diamant') && hit.body.system.includes('$250') && hit.body.system.includes('Steve_Help') && hit.body.system.includes('discord.gg'));
+  await api(steve, 'POST', '/api/assistant/chat', { messages: [{ role: 'user', content: 'Frage 2' }] });
+  await api(steve, 'POST', '/api/assistant/chat', { messages: [{ role: 'user', content: 'Frage 3' }] });
+  check('Fragen-Limit pro Stunde', (await api(steve, 'POST', '/api/assistant/chat', { messages: [{ role: 'user', content: 'Frage 4' }] })).status === 429);
+  await api(admin, 'PUT', '/api/admin/settings/ai', { enabled: true, model: 'claude-haiku-5-5', limitPerHour: 3, apiKey: 'sk-ant-wrong-0123456789abcdefghijklmn' });
+  const badKey = await api(admin, 'POST', '/api/assistant/chat', { messages: [{ role: 'user', content: 'Hi' }] });
+  check('Ungültiger Schlüssel → verständliche Meldung', badKey.status === 502 && /Schlüssel/.test(badKey.data.error));
+
   console.log('\nSpam-Schutz & Abmelden');
   let limited = false;
   for (let i = 0; i < 8; i++) {
@@ -242,6 +301,7 @@ try {
 } finally {
   server.kill();
   discord.close();
+  claude.close();
   fs.rmSync(dataDir, { recursive: true, force: true });
   console.log(`\n${passed} bestanden, ${failed} fehlgeschlagen\n`);
   process.exit(failed ? 1 : 0);

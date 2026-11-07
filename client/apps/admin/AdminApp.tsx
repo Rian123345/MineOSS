@@ -5,7 +5,7 @@ import { openApp } from '../../os/apps';
 import { wm } from '../../os/wm';
 import { useStore, settingsStore } from '../../lib/store';
 import { sessionStore, onAdminEvent, markAllRead, logout, requestNotificationPermission, playChime } from '../../os/session';
-import type { DashboardStats } from '../../../shared/types';
+import type { DashboardStats, AiSettings } from '../../../shared/types';
 import { STATUS_COLORS, STATUS_LABELS, ORDER_STATUSES } from '../../../shared/constants';
 import { ShieldIcon, BellIcon, Chevron, ArrowGlyph, StatusGlyph, PackageIcon, ItemIcon, GearIcon, HomeIcon, UserPic } from '../../os/icons';
 import { UsersPage } from './Users';
@@ -297,6 +297,7 @@ function SettingsPage() {
     <div className="app-scroll" style={{ padding: '14px 20px' }}>
       <h1 className="h-title">{tr("Einstellungen", "Settings")}</h1>
       <DiscordSettings />
+      <AiSettingsBox />
 
       <div className="group-box" style={{ maxWidth: 640 }}>
         <span className="gb-title">{tr("Benachrichtigungen in MineOS", "Notifications in MineOS")}</span>
@@ -330,23 +331,24 @@ function SettingsPage() {
 
 /* ─────────── Discord verbinden ─────────── */
 
-interface DiscordState { configured: boolean; maskedUrl: string | null; mention: string; notifyStatus: boolean; fromEnv: boolean }
+interface DiscordState { configured: boolean; maskedUrl: string | null; mention: string; notifyStatus: boolean; notifySupport: boolean; fromEnv: boolean }
 
 function DiscordSettings() {
   const [st, setSt] = useState<DiscordState | null>(null);
   const [url, setUrl] = useState('');
   const [mention, setMention] = useState('@here');
   const [notifyStatus, setNotifyStatus] = useState(false);
+  const [notifySupport, setNotifySupport] = useState(true);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const apply = (d: DiscordState) => { setSt(d); setMention(d.mention); setNotifyStatus(d.notifyStatus); };
+  const apply = (d: DiscordState) => { setSt(d); setMention(d.mention); setNotifyStatus(d.notifyStatus); setNotifySupport(d.notifySupport); };
   useEffect(() => { adminApi<DiscordState>('GET', '/api/admin/settings/discord').then(apply).catch((e) => setMsg({ ok: false, text: e.message })); }, []);
 
   const save = async (removeUrl = false) => {
     setBusy(true); setMsg(null);
     try {
-      const body: Record<string, unknown> = { mention: mention.trim(), notifyStatus };
+      const body: Record<string, unknown> = { mention: mention.trim(), notifyStatus, notifySupport };
       if (removeUrl) body.webhookUrl = null; else if (url.trim()) body.webhookUrl = url.trim();
       const d = await adminApi<DiscordState>('PUT', '/api/admin/settings/discord', body);
       apply(d); setUrl('');
@@ -418,10 +420,102 @@ function DiscordSettings() {
           </div>
           <label className="check" style={{ display: 'flex', marginBottom: 10 }}>
             <input type="checkbox" checked={notifyStatus} disabled={st.fromEnv} onChange={() => setNotifyStatus(!notifyStatus)} /> {tr("Auch Statusänderungen (angenommen, wird gefarmt, …) an Discord senden", "Also send status changes (accepted, farming, …) to Discord")}</label>
+          <label className="check" style={{ display: 'flex', marginBottom: 10 }}>
+            <input type="checkbox" checked={notifySupport} onChange={() => setNotifySupport(!notifySupport)} /> {tr('Neue Hilfe-Anfragen aus dem MineChat an Discord senden', 'Send new help requests from MineChat to Discord')}</label>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             {!st.fromEnv && <button className="btn default" onClick={() => save()} disabled={busy}>{busy ? <Spinner small dark /> : tr("Speichern", "Save")}</button>}
             <button className="btn" onClick={test} disabled={busy || !st.configured}>{tr("Testnachricht senden", "Send test message")}</button>
             {st.configured && !st.fromEnv && <button className="btn danger" onClick={() => save(true)} disabled={busy}>{tr("Trennen", "Disconnect")}</button>}
+          </div>
+          {msg && <div className={msg.ok ? 'ok-text' : 'err-text'} style={{ marginTop: 8 }}>{msg.text}</div>}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─────────── KI-Assistent (MineBot) ─────────── */
+
+function AiSettingsBox() {
+  const [st, setSt] = useState<AiSettings | null>(null);
+  const [key, setKey] = useState('');
+  const [enabled, setEnabled] = useState(true);
+  const [model, setModel] = useState('claude-haiku-5-5');
+  const [limit, setLimit] = useState('30');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const apply = (d: AiSettings) => { setSt(d); setEnabled(d.enabled); setModel(d.model); setLimit(String(d.limitPerHour)); };
+  useEffect(() => { adminApi<AiSettings>('GET', '/api/admin/settings/ai').then(apply).catch((e) => setMsg({ ok: false, text: e.message })); }, []);
+
+  const save = async (clearKey = false) => {
+    setBusy(true); setMsg(null);
+    try {
+      const d = await adminApi<AiSettings>('PUT', '/api/admin/settings/ai', {
+        enabled, model: model.trim(), limitPerHour: Math.max(1, Math.min(500, Number(limit) || 30)),
+        ...(key.trim() ? { apiKey: key.trim() } : {}), ...(clearKey ? { clearKey: true } : {}),
+      });
+      apply(d); setKey('');
+      if (d.hasKey && !clearKey && enabled) {
+        try {
+          const t = await adminApi<{ reply: string }>('POST', '/api/admin/ai-test', {});
+          setMsg({ ok: true, text: tr(`Gespeichert! MineBot antwortet: „${t.reply}“`, `Saved! MineBot replies: “${t.reply}”`) });
+        } catch (te) { setMsg({ ok: false, text: tr(`Gespeichert, aber der Test schlug fehl: ${(te as Error).message}`, `Saved, but the test failed: ${(te as Error).message}`) }); }
+      } else setMsg({ ok: true, text: tr('Gespeichert.', 'Saved.') });
+    } catch (e) {
+      const a = e as ApiError;
+      setMsg({ ok: false, text: a.fields ? Object.values(a.fields).join(' ') : a.message });
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="group-box" style={{ maxWidth: 680 }}>
+      <span className="gb-title">{tr('KI-Assistent „MineBot“', 'AI assistant “MineBot”')}</span>
+      {!st ? <Spinner small dark /> : (
+        <>
+          <p style={{ marginTop: 0 }}>
+            Status: {st.hasKey && st.enabled ? <b className="ok-text">{tr('✔ Aktiv', '✔ Active')}</b> : <b className="err-text">{st.hasKey ? tr('Ausgeschaltet', 'Turned off') : tr('Nicht eingerichtet', 'Not set up')}</b>}
+            {st.keyHint && <span className="muted kbd" style={{ marginLeft: 8 }}>{tr('Schlüssel ', 'Key ')}{st.keyHint}</span>}
+          </p>
+          <p className="muted" style={{ marginTop: 0 }}>{tr('MineBot beantwortet im MineChat Fragen zu Minecraft und zum Shop – mit dem aktuellen Sortiment und den Preisen. Dafür nutzt MineOS die Claude-API von Anthropic. Die Kosten rechnet Anthropic direkt mit dir ab; mit „Haiku“ kostet eine Antwort meist nur Bruchteile eines Cents.', 'MineBot answers questions about Minecraft and the shop in MineChat – including the current items and prices. MineOS uses the Claude API by Anthropic for this. Anthropic bills you directly; with “Haiku”, an answer usually costs a fraction of a cent.')}</p>
+          {st.fromEnv ? (
+            <div className="info-bar blue" style={{ marginBottom: 10 }}><StatusGlyph kind="info" size={16} /> {tr('Der Schlüssel ist als Umgebungsvariable ANTHROPIC_API_KEY gesetzt.', 'The key is set as the environment variable ANTHROPIC_API_KEY.')}</div>
+          ) : (
+            <>
+              <ol className="discord-steps">
+                <li>{tr('Auf ', 'On ')}<b>console.anthropic.com</b>{tr(' anmelden und unter „API Keys“ einen neuen Schlüssel erstellen.', ', sign in and create a new key under “API Keys”.')}</li>
+                <li>{tr('Unter „Billing“ ein kleines Guthaben aufladen (z. B. 5 $).', 'Add a small balance under “Billing” (e.g. $5).')}</li>
+                <li>{tr('Den Schlüssel (beginnt mit „sk-ant-…“) hier einfügen und speichern.', 'Paste the key (starts with “sk-ant-…”) here and save.')}</li>
+              </ol>
+              <div className="field">
+                <label>{tr('API-Schlüssel', 'API key')}</label>
+                <input className="input" type="password" style={{ width: '100%' }} value={key} onChange={(e) => setKey(e.target.value)} autoComplete="off" spellCheck={false}
+                  placeholder={st.hasKey ? tr('Neuen Schlüssel einfügen, um ihn zu ersetzen', 'Paste a new key to replace it') : 'sk-ant-…'} />
+                <span className="hint">{tr('Der Schlüssel wird nur auf dem Server gespeichert und nie an Spieler geschickt.', 'The key is only stored on the server and never sent to players.')}</span>
+              </div>
+            </>
+          )}
+          <div className="pform-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <div className="field">
+              <label>{tr('Modell', 'Model')}</label>
+              <select className="select" value={['claude-haiku-5-5', 'claude-sonnet-5-5'].includes(model) ? model : 'custom'} onChange={(e) => setModel(e.target.value === 'custom' ? '' : e.target.value)}>
+                <option value="claude-haiku-5-5">{tr('Claude Haiku 5.5 – schnell & günstig (empfohlen)', 'Claude Haiku 5.5 – fast & cheap (recommended)')}</option>
+                <option value="claude-sonnet-5-5">{tr('Claude Sonnet 5.5 – klüger, etwas teurer', 'Claude Sonnet 5.5 – smarter, a bit pricier')}</option>
+                <option value="custom">{tr('Anderes Modell …', 'Other model …')}</option>
+              </select>
+            </div>
+            {!['claude-haiku-5-5', 'claude-sonnet-5-5'].includes(model) && (
+              <div className="field"><label>{tr('Modell-ID', 'Model ID')}</label><input className="input kbd" value={model} onChange={(e) => setModel(e.target.value)} placeholder="claude-…" /></div>
+            )}
+            <div className="field">
+              <label>{tr('Fragen pro Spieler und Stunde', 'Questions per player per hour')}</label>
+              <input className="input" type="number" min={1} max={500} style={{ width: 90 }} value={limit} onChange={(e) => setLimit(e.target.value)} />
+            </div>
+          </div>
+          <label className="check" style={{ display: 'flex', marginBottom: 10 }}>
+            <input type="checkbox" checked={enabled} onChange={() => setEnabled(!enabled)} /> {tr('MineBot für alle Spieler einschalten', 'Turn on MineBot for all players')}</label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button className="btn default" onClick={() => save()} disabled={busy}>{busy ? <Spinner small dark /> : tr('Speichern & testen', 'Save & test')}</button>
+            {st.hasKey && !st.fromEnv && <button className="btn danger" onClick={() => save(true)} disabled={busy}>{tr('Schlüssel entfernen', 'Remove key')}</button>}
           </div>
           {msg && <div className={msg.ok ? 'ok-text' : 'err-text'} style={{ marginTop: 8 }}>{msg.text}</div>}
         </>

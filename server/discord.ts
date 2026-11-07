@@ -174,3 +174,22 @@ export async function notifyStatusChange(order: Order, note: string | null) {
 if (config.discordWebhookUrl && !/^https:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/.test(config.discordWebhookUrl)) {
   console.warn('[discord] Hinweis: DISCORD_WEBHOOK_URL sieht nicht wie eine Discord-Webhook-URL aus.');
 }
+
+/** MineChat: neue Hilfe-Anfrage eines Spielers (nur die erste Nachricht nach Pause/Erledigt, damit Discord nicht vollläuft) */
+export async function notifySupportRequest(userName: string, text: string) {
+  const cfg = discordConfig();
+  if (!cfg.webhookUrl || getSetting('discord_notify_support') === '0') return;
+  const base = process.env.PUBLIC_URL ? process.env.PUBLIC_URL.replace(/\/+$/, '') : '';
+  await sendWebhook({
+    content: cfg.mention || undefined,
+    allowed_mentions: allowedMentions(),
+    embeds: [{
+      title: `💬 Neue Hilfe-Anfrage von ${esc(userName)}`,
+      description: truncate(esc(text), 1500),
+      color: 0x2f7fd8,
+      fields: base ? [{ name: 'Antworten', value: `${base}/#chat`, inline: false }] : [],
+      footer: { text: 'MineChat · MineOS' },
+      timestamp: new Date().toISOString(),
+    }],
+  }).catch(() => {});
+}

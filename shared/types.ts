@@ -158,3 +158,37 @@ export interface AdminNotification {
   read: boolean;
   createdAt: string;
 }
+
+/* ─────────── MineChat (Hilfe-Chat) ─────────── */
+export interface SupportMessage {
+  id: number;
+  sender: 'user' | 'admin' | 'system';
+  /** Name des Spielers bzw. Admins, der geschrieben hat */
+  authorName: string | null;
+  body: string;
+  createdAt: string;
+}
+
+export interface SupportThread {
+  id: number;
+  userId: number;
+  userName: string;
+  status: 'open' | 'closed';
+  userUnread: number;
+  adminUnread: number;
+  lastMessageAt: string;
+  lastMessage: string | null;
+  lastSender: SupportMessage['sender'] | null;
+}
+
+/** KI-Assistent (MineBot) */
+export interface AssistantMessage { role: 'user' | 'assistant'; content: string }
+export interface AssistantStatus { enabled: boolean; model: string | null }
+export interface AiSettings {
+  enabled: boolean;
+  model: string;
+  limitPerHour: number;
+  hasKey: boolean;
+  keyHint: string | null;
+  fromEnv: boolean;
+}

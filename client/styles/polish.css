@@ -431,3 +431,8 @@ button.wp-tile { font: inherit; color: inherit; background: none; cursor: defaul
 .theme-thumb.xp .tt-task { background: linear-gradient(#3168d5, #245ddb 50%, #1941a5); height: 10px; }
 .tt-start { display: none; }
 .theme-thumb.xp .tt-start { display: block; width: 26px; height: 10px; border-radius: 0 5px 5px 0; background: linear-gradient(#5eac56, #3a9732 60%, #2b7623); }
+
+.theme-thumb.xp.dark .tt-win { background: #1d1f22; }
+.theme-thumb.xp.dark .tt-bar { background: linear-gradient(#5d6168, #2e3136 50%, #1d1f22); }
+.theme-thumb.xp.dark .tt-task { background: linear-gradient(#44474d, #232528 50%, #151618); }
+.theme-thumb.xp.dark .tt-start { background: linear-gradient(#3c7a35, #295f23 60%, #1c4518); }

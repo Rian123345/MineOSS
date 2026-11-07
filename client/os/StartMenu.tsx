@@ -5,7 +5,7 @@ import { sessionStore } from './session';
 import { catalogStore, loadCatalog, useCatalog } from '../lib/catalog';
 import {
   StoreIcon, ComputerIcon, ControlPanelIcon, UserPic, ShieldIcon, Emblem, PackageIcon, ItemIcon,
-  SearchIcon, Chevron, FolderIcon, PowerIcon,
+  SearchIcon, Chevron, FolderIcon, PowerIcon, ChatIcon,
 } from './icons';
 import { openContextMenu } from './ContextMenu';
 import { euro } from '../lib/format';
@@ -33,6 +33,7 @@ export function StartMenu({ closing, onClose, onShutdown }: Props) {
 
   const programs = [
     { id: 'store', label: 'Minecraft Store', sub: tr("Items bestellen", "Order items"), icon: <StoreIcon size={32} />, run: () => openApp('store') },
+    { id: 'chat', label: 'MineChat', sub: tr('Hilfe & KI-Assistent', 'Help & AI assistant'), icon: <ChatIcon size={32} />, run: () => openApp('chat') },
     { id: 'track', label: tr("Meine Bestellungen", "My orders"), sub: tr("Status deiner Bestellungen", "Status of your orders"), icon: <PackageIcon size={32} />, run: () => openApp('store', { view: { kind: 'track' } }) },
     ...(session.isAdmin ? [{ id: 'admin', label: tr("Shop-Verwaltung", "Shop Management"), sub: tr("Bestellungen & Produkte", "Orders & products"), icon: <ShieldIcon size={30} />, run: () => openApp('admin') }] : []),
   ];
@@ -55,7 +56,7 @@ export function StartMenu({ closing, onClose, onShutdown }: Props) {
     { label: 'Computer', icon: <ComputerIcon size={44} />, run: () => openApp('computer') },
     { label: tr("Systemsteuerung", "Control Panel"), icon: <ControlPanelIcon size={44} />, run: () => openApp('controlpanel') },
     ...(session.isAdmin ? [{ label: tr("Shop-Verwaltung", "Shop Management"), icon: <ShieldIcon size={42} />, run: () => openApp('admin') }] : []),
-    { label: tr("Hilfe und Support", "Help and Support"), icon: <Emblem size={42} />, run: () => openApp('about') },
+    { label: tr("Hilfe und Support", "Help and Support"), icon: <ChatIcon size={42} />, run: () => openApp('chat') },
   ];
 
   const powerMenu = (e: React.MouseEvent) => {

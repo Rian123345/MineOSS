@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import { wm, type AppId, type OpenOptions } from './wm';
-import { StoreIcon, ComputerIcon, ControlPanelIcon, UserPic, StatusGlyph, ShieldIcon, Emblem } from './icons';
+import { StoreIcon, ComputerIcon, ControlPanelIcon, UserPic, StatusGlyph, ShieldIcon, Emblem, ChatIcon } from './icons';
+import { ChatApp } from '../apps/chat/ChatApp';
 import { StoreApp } from '../apps/store/StoreApp';
 import { AdminApp } from '../apps/admin/AdminApp';
 import { ComputerApp } from '../apps/system/Computer';
@@ -30,6 +31,14 @@ export const APPS: Record<AppId, AppDef> = {
     largeIcon: (s = 32) => <StoreIcon size={s} />,
     options: { w: 1060, h: 700, minW: 520, minH: 380 },
     hot: '110, 200, 70',
+  },
+  chat: {
+    title: 'MineChat',
+    component: ChatApp,
+    smallIcon: () => <ChatIcon size={16} />,
+    largeIcon: (s = 32) => <ChatIcon size={s} />,
+    options: { w: 900, h: 620, minW: 380, minH: 360 },
+    hot: '90, 200, 120',
   },
   admin: {
     get title() { return tr("Shop-Verwaltung", "Shop Management"); },

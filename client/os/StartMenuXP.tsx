@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { openApp } from './apps';
 import { useStore } from '../lib/store';
 import { sessionStore } from './session';
-import { StoreIcon, ComputerIcon, ControlPanelIcon, UserPic, ShieldIcon, Emblem, PackageIcon, SearchIcon, FolderIcon, PowerIcon } from './icons';
+import { StoreIcon, ComputerIcon, ControlPanelIcon, UserPic, ShieldIcon, Emblem, PackageIcon, SearchIcon, FolderIcon, PowerIcon, ChatIcon } from './icons';
 import { tr } from '../lib/i18n';
 import { playSound } from './sounds';
 
@@ -31,6 +31,7 @@ export function StartMenuXP({ closing, onClose, onXpDialog }: Props) {
 
   const pinned: Entry[] = [
     { id: 'store', label: 'Minecraft Store', sub: tr('Items bestellen', 'Order items'), icon: <StoreIcon size={32} />, run: () => openApp('store') },
+    { id: 'chat', label: 'MineChat', sub: tr('Hilfe & KI-Assistent', 'Help & AI assistant'), icon: <ChatIcon size={32} />, run: () => openApp('chat') },
     { id: 'track', label: tr('Meine Bestellungen', 'My orders'), sub: tr('Status deiner Bestellungen', 'Status of your orders'), icon: <PackageIcon size={32} />, run: () => openApp('store', { view: { kind: 'track' } }) },
   ];
   const frequent: Entry[] = [
@@ -48,7 +49,7 @@ export function StartMenuXP({ closing, onClose, onXpDialog }: Props) {
     { id: 'r-users', label: tr('Benutzerkonten', 'User Accounts'), icon: <UserPic size={24} admin={session.isAdmin} />, run: () => openApp('useraccounts') },
     ...(session.isAdmin ? [{ id: 'r-admin', label: tr('Shop-Verwaltung', 'Shop Management'), icon: <ShieldIcon size={22} />, run: () => openApp('admin') }] : []),
     'sep',
-    { id: 'r-help', label: tr('Hilfe und Support', 'Help and Support'), icon: <Emblem size={22} />, run: () => openApp('about') },
+    { id: 'r-help', label: tr('Hilfe und Support', 'Help and Support'), icon: <ChatIcon size={22} />, run: () => openApp('chat') },
     { id: 'r-search', label: tr('Suchen', 'Search'), icon: <SearchIcon size={20} />, run: () => openApp('store', { view: { kind: 'search', q: '' } }) },
   ];
   const allPrograms: Entry[] = [

@@ -138,4 +138,5 @@ export const discordSettingsSchema = z.object({
   ]).optional(),
   mention: z.string().trim().max(40).refine((m) => m === '' || m === '@here' || m === '@everyone' || /^<@[!&]?\d+>$/.test(m), 'Erlaubt: leer, @here, @everyone, <@BenutzerID> oder <@&RollenID>.'),
   notifyStatus: z.boolean(),
+  notifySupport: z.boolean().optional(),
 }).strict();
