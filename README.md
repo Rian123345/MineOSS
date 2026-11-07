@@ -50,6 +50,22 @@ Die Wahl wird im Browser gespeichert. Beim ersten Besuch übernimmt MineOS die S
 
 Den Dunkelmodus schaltest du mit dem **Mond-Symbol** in der Taskleiste ein und mit dem Sonnen-Symbol wieder aus. Alternativ geht das unter *Systemsteuerung → Anpassung → Design*. Fensterrahmen bleiben Aero-Glas, nur dunkler, und alle Fensterinhalte werden dunkel. Die Einstellung wird pro Browser gespeichert.
 
+### XP-Theme (Luna)
+
+Unter *Systemsteuerung → Anpassung → Design* kannst du zwischen **Aero** (Windows-7-Stil) und **Luna** (Windows-XP-Stil) wählen. Mit Luna bekommt MineOS:
+
+- den schwarzen Ladebildschirm mit dem wandernden blauen Balken,
+- den blauen Anmelde- und „willkommen“-Bildschirm,
+- blaue Fenster und die blaue Taskleiste mit grünem Start-Knopf und Schnellstartleiste,
+- das zweispaltige Startmenü und die Dialoge „Ausschalten“ und „Abmelden“, bei denen der Desktop grau wird,
+- eigene XP-artige Klänge für Hochfahren, Anmelden, Abmelden, Herunterfahren, Hinweise und Fehlermeldungen.
+
+Nur im Luna-Design kannst du zwischen dem **Bliss**-Hintergrund und dem SenorPollo-Bild wechseln. Statt des Windows-Logos zeigt MineOS überall sein eigenes Logo. Den Dunkelmodus gibt es nur im Aero-Design.
+
+**Eigene Klänge:** Die XP-Klänge erzeugt MineOS selbst. Möchtest du andere Sounddateien verwenden, lege sie als MP3, WAV oder OGG in `client/assets/sounds/xp/` und baue neu, z. B. `startup.mp3`, `logon.wav` oder `notify.ogg`. Alle Namen stehen in der Datei `LIESMICH.txt` in diesem Ordner.
+
+Hinweis: Browser spielen Töne erst nach dem ersten Klick oder Tastendruck ab. Wer schon angemeldet ist und die Seite neu lädt, hört den Startklang deshalb nicht.
+
 ### Minecraft-Texturen
 
 Alle Items und Blöcke im Shop zeigen die **Original-Texturen** aus dem Minecraft-Resource-Pack (1.21.11): 1254 Icons, davon 716 Items (flach, pixelgenau) und 538 Blöcke (als 3D-Würfel gerendert). Sie liegen gebündelt in `client/mc-textures.json` (eine Datei statt 1254, praktisch für GitHub); beim Build entstehen daraus die Bilder in `dist/public/mc/`. Verzauberte Items wie das Verzauberte Buch oder der Netherstern schimmern lila.

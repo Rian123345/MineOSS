@@ -5,6 +5,7 @@ import { euro } from '../lib/format';
 import { settingsStore } from '../lib/store';
 import { CLIENT_BUILD } from '../lib/build';
 import { tr } from '../lib/i18n';
+import { playSound, type SoundKind } from './sounds';
 
 /* ─────────── Anmeldung mit Minecraft-Name + Passwort ─────────── */
 
@@ -171,27 +172,7 @@ export function requestNotificationPermission() {
   }
 }
 
-let audioCtx: AudioContext | null = null;
-export function playChime(kind: 'order' | 'error' | 'click' | 'logon' = 'order') {
-  const s = settingsStore.get();
-  if (!s.sounds || s.volume <= 0) return;
-  try {
-    audioCtx ||= new (window.AudioContext || (window as any).webkitAudioContext)();
-    const ctx = audioCtx;
-    const vol = (s.volume / 100) * 0.18;
-    const notes = kind === 'order' ? [880, 1318.5] : kind === 'error' ? [330, 262] : kind === 'logon' ? [523.25, 659.25, 783.99, 1046.5] : [1200];
-    notes.forEach((f, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.value = f;
-      const t = ctx.currentTime + i * (kind === 'logon' ? 0.18 : 0.14);
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(vol, t + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + (kind === 'logon' ? 1.2 : 0.5));
-      o.connect(g).connect(ctx.destination);
-      o.start(t);
-      o.stop(t + 1.3);
-    });
-  } catch { /* Audio nicht verfügbar */ }
+/** Systemklang abspielen (Details siehe sounds.ts) */
+export function playChime(kind: SoundKind = 'order') {
+  playSound(kind);
 }

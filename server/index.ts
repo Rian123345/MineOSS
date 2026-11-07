@@ -52,6 +52,10 @@ const MIME: Record<string, string> = {
   '.json': 'application/json; charset=utf-8',
   '.map': 'application/json; charset=utf-8',
   '.woff2': 'font/woff2',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.txt': 'text/plain; charset=utf-8',
 };
 
 function serveFile(res: http.ServerResponse, file: string, cache: string, method: string) {

@@ -17,6 +17,18 @@ const AppHost = memo(function AppHost({ win }: { win: Pick<WinState, 'id' | 'app
 
 type Dir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
+/** Symbole der Fensterknöpfe im XP-Stil (werden nur im XP-Theme angezeigt) */
+function XpGlyph({ kind }: { kind: 'min' | 'max' | 'restore' | 'close' }) {
+  return (
+    <svg className="xp-glyph" width="21" height="21" viewBox="0 0 21 21" aria-hidden="true">
+      {kind === 'min' && <rect x="5" y="13" width="7" height="3" fill="#fff" />}
+      {kind === 'max' && <path d="M5 5h11v11H5z M6 8v7h9V8z" fill="#fff" fillRule="evenodd" />}
+      {kind === 'restore' && <path d="M8 4h9v9h-3v-1h2V7H9v1H8z M4 8h9v9H4z M5 11v5h7v-5z" fill="#fff" fillRule="evenodd" />}
+      {kind === 'close' && <path d="M5.5 5.5l10 10M15.5 5.5l-10 10" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />}
+    </svg>
+  );
+}
+
 export function Window({ win }: { win: WinState }) {
   const activeId = useStore(wmStore).activeId;
   const hasModalChild = useStore(wmStore).windows.some((c) => c.parentId === win.id && c.phase !== 'closing');
@@ -207,11 +219,11 @@ export function Window({ win }: { win: WinState }) {
         </div>
         <div className="win-caption">
           {win.minimizable && (
-            <button className="cap-min" title={tr("Minimieren", "Minimize")} aria-label={tr("Minimieren", "Minimize")} onClick={() => wm.minimize(win.id)}><CapGlyph kind="min" /></button>
+            <button className="cap-min" title={tr("Minimieren", "Minimize")} aria-label={tr("Minimieren", "Minimize")} onClick={() => wm.minimize(win.id)}><CapGlyph kind="min" /><XpGlyph kind="min" /></button>
           )}
           {win.maximizable && (
-            <button className="cap-max" title={win.maximized ? tr("Verkleinern", "Restore Down") : tr("Maximieren", "Maximize")} aria-label={tr("Maximieren", "Maximize")} onClick={() => wm.toggleMax(win.id)}>
-              <CapGlyph kind={win.maximized ? 'restore' : 'max'} />
+            <button className="cap-max" data-state={win.maximized ? 'restore' : 'max'} title={win.maximized ? tr("Verkleinern", "Restore Down") : tr("Maximieren", "Maximize")} aria-label={tr("Maximieren", "Maximize")} onClick={() => wm.toggleMax(win.id)}>
+              <CapGlyph kind={win.maximized ? 'restore' : 'max'} /><XpGlyph kind={win.maximized ? 'restore' : 'max'} />
             </button>
           )}
           <button
@@ -221,7 +233,7 @@ export function Window({ win }: { win: WinState }) {
             onClick={() => (win.props?.onCloseRequest ? win.props.onCloseRequest() : wm.close(win.id))}
             style={!win.minimizable && !win.maximizable ? { width: 43, borderRadius: '0 0 5px 5px' } : undefined}
           >
-            <CapGlyph kind="close" />
+            <CapGlyph kind="close" /><XpGlyph kind="close" />
           </button>
         </div>
         <div className="win-framebar" ref={setFramebar} />

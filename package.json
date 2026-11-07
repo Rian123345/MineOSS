@@ -1,6 +1,6 @@
 {
   "name": "mineos",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "MineOS – ein Minecraft-Shop als Windows-7-artiges Web-Betriebssystem",
   "type": "module",

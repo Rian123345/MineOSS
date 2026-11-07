@@ -424,3 +424,10 @@
 .lang-opt input { margin: 0; }
 .lang-opt b { display: block; font-weight: 600; font-size: 13px; }
 .lang-opt small { display: block; }
+button.wp-tile { font: inherit; color: inherit; background: none; cursor: default; text-align: center; }
+.theme-thumb.xp .tt-win { background: #0831d9; border-radius: 4px 4px 0 0; padding: 0 2px 2px; box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+.theme-thumb.xp .tt-bar { height: 9px; background: linear-gradient(#3d95ff, #0058ee 50%, #0050ee); }
+.theme-thumb.xp .tt-body { background: #fff; }
+.theme-thumb.xp .tt-task { background: linear-gradient(#3168d5, #245ddb 50%, #1941a5); height: 10px; }
+.tt-start { display: none; }
+.theme-thumb.xp .tt-start { display: block; width: 26px; height: 10px; border-radius: 0 5px 5px 0; background: linear-gradient(#5eac56, #3a9732 60%, #2b7623); }

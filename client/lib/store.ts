@@ -43,6 +43,10 @@ export interface Settings {
   sounds: boolean;
   /** Dunkelmodus */
   dark: boolean;
+  /** Optik: Windows-7-Stil (Aero) oder Windows-XP-Stil (Luna) */
+  skin: 'win7' | 'xp';
+  /** Hintergrund im XP-Theme */
+  xpWallpaper: 'bliss' | 'senorpollo';
 }
 export const settingsStore = createStore<Settings>({
   wallpaper: 'aero',
@@ -55,9 +59,14 @@ export const settingsStore = createStore<Settings>({
   volume: 60,
   sounds: true,
   dark: false,
+  skin: 'win7',
+  xpWallpaper: 'bliss',
 }, 'mineos.settings');
 
 export function setDark(dark: boolean) { settingsStore.set((s) => ({ ...s, dark })); }
+
+/** Theme wechseln (XP startet mit dem Bliss-Hintergrund) */
+export function setSkin(skin: 'win7' | 'xp') { settingsStore.set((s) => ({ ...s, skin, xpWallpaper: skin === 'xp' && s.skin !== 'xp' ? 'bliss' : s.xpWallpaper })); }
 
 /* ── Warenkorb ── */
 export interface CartState { lines: { productId: number; quantity: number }[] }

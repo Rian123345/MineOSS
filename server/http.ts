@@ -146,6 +146,7 @@ export function securityHeaders(res: ServerResponse) {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
+      "media-src 'self' blob:",
       "connect-src 'self'",
       "object-src 'none'",
       "base-uri 'none'",

@@ -1,0 +1,19 @@
+Eigene Klänge für das XP-Theme
+==============================
+
+MineOS erzeugt die XP-Klänge selbst. Wenn du lieber eigene Sounddateien
+verwenden möchtest, lege sie hier ab (MP3, WAV oder OGG) und baue neu
+(npm run build bzw. bei Render einfach hochladen):
+
+  startup   – beim Hochfahren (erster Start)
+  logon     – beim Anmelden
+  logoff    – beim Abmelden
+  shutdown  – beim Herunterfahren
+  notify    – Sprechblase / neue Bestellung
+  ding      – Info-Meldung
+  error     – Fehlermeldung
+  exclamation – Warnung / Rückfrage
+  click     – Klick (z. B. Startmenü, Ordner wechseln)
+
+Beispiel: startup.mp3, logon.wav, notify.ogg
+Fehlt eine Datei, wird der eingebaute Klang verwendet.

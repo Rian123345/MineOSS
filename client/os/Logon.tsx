@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useStore } from '../lib/store';
+import { useStore, settingsStore } from '../lib/store';
 import { sessionStore, checkSession, login, register } from './session';
 import { UserPic, StatusGlyph, ArrowGlyph, Emblem, ItemIcon, PowerIcon } from './icons';
-import { Spinner, LogonBackdrop } from './Boot';
+import { Spinner, LogonBackdrop, XpFrame, XpWordmark } from './Boot';
 import { post, ApiError } from '../lib/api';
 import { cls } from '../lib/format';
 import { tr, useLang, setLang } from '../lib/i18n';
@@ -11,7 +11,36 @@ const NAME_RE = /^[.*]?[A-Za-z0-9_](?:[A-Za-z0-9_]| (?! )){2,15}$/;
 
 export function LogonScreen({ onShutdown }: { onShutdown: () => void }) {
   const s = useStore(sessionStore);
+  const skin = useStore(settingsStore).skin;
   const [busy, setBusy] = useState(false);
+
+  if (skin === 'xp') {
+    return (
+      <div className="logon-screen xp-logon">
+        <XpFrame bottom={<XpLogonBottom onShutdown={onShutdown} />}>
+          <div className="xp-logon-split">
+            <div className="xpl-left">
+              <XpWordmark />
+              <div className="xpl-tagline">{tr('Melde dich mit deinem Minecraft-Namen an, um zu beginnen.', 'Sign in with your Minecraft name to begin.')}</div>
+            </div>
+            <div className="xpl-divider" />
+            <div className="xpl-right">
+              {s.error ? (
+                <div className="xp-user-tile selected" style={{ cursor: 'default' }}>
+                  <span className="xput-pic"><StatusGlyph kind="warning" size={44} /></span>
+                  <span className="xput-name">{tr("MineOS ist nicht erreichbar", "MineOS cannot be reached")}<small>{s.error}</small>
+                    <button className="xp-go-btn" style={{ marginTop: 8 }} onClick={() => { setBusy(true); void checkSession().finally(() => setBusy(false)); }} disabled={busy}>
+                      {tr("Erneut versuchen", "Try again")} <ArrowGlyph dir="right" size={10} />
+                    </button>
+                  </span>
+                </div>
+              ) : <LoginPanel xp />}
+            </div>
+          </div>
+        </XpFrame>
+      </div>
+    );
+  }
 
   if (s.error) {
     return (
@@ -39,7 +68,7 @@ export function LogonScreen({ onShutdown }: { onShutdown: () => void }) {
   );
 }
 
-function LoginPanel() {
+function LoginPanel({ xp }: { xp?: boolean }) {
   const s = useStore(sessionStore);
   // Ganz am Anfang (noch niemand registriert, Betreiber am PC) direkt „Konto erstellen“ zeigen
   const [mode, setMode] = useState<'login' | 'register'>(s.noAdmin && s.setupAllowed ? 'register' : 'login');
@@ -80,7 +109,7 @@ function LoginPanel() {
   return (
     <div className="logon-center">
       <div className="logon-tile">
-        <div className="ws-pic big"><div><UserPic size={110} /></div></div>
+        <div className="ws-pic big"><div><UserPic size={xp ? 48 : 110} /></div></div>
       </div>
       <div className="logon-name">{mode === 'login' ? (name.trim() || tr("Minecraft-Spieler", "Minecraft player")) : tr("Neues Konto", "New account")}</div>
 
@@ -153,6 +182,20 @@ function LoginPanel() {
       </button>
       {s.noAdmin && !s.setupAllowed && <SetupCodeInline />}
     </div>
+  );
+}
+
+function XpLogonBottom({ onShutdown }: { onShutdown: () => void }) {
+  const lang = useLang();
+  return (
+    <>
+      <button className="xp-turnoff" onClick={onShutdown}><span className="xp-turnoff-ic"><PowerIcon size={16} color="#fff" /></span>{tr('MineOS ausschalten', 'Turn off MineOS')}</button>
+      <div className="logon-lang xp" role="group" aria-label={tr('Sprache', 'Language')}>
+        <button className={cls(lang === 'de' && 'on')} onClick={() => setLang('de')} title="Deutsch">DE</button>
+        <button className={cls(lang === 'en' && 'on')} onClick={() => setLang('en')} title="English">EN</button>
+      </div>
+      <span className="xpf-hint">{tr('Nach der Anmeldung kannst du dein Konto unter „Benutzerkonten“ verwalten.', 'After you sign in, you can manage your account under “User Accounts”.')}</span>
+    </>
   );
 }
 

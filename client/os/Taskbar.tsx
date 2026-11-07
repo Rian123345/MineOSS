@@ -127,6 +127,18 @@ function Preview({ app, wins, left, onLeave, onEnter }: { app: AppId; wins: WinS
 
 /* ─────────── Taskleiste ─────────── */
 
+/** Kleines Symbol „Desktop anzeigen“ für die XP-Schnellstartleiste */
+function DesktopGlyph() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16">
+      <rect x="1" y="2" width="14" height="10" rx="1" fill="#3a6fd8" stroke="#1d3f8f" />
+      <rect x="2.5" y="3.5" width="11" height="5" fill="#8fd3ff" />
+      <rect x="2.5" y="8" width="11" height="2.5" fill="#5fae3b" />
+      <rect x="5" y="12.5" width="6" height="1.5" fill="#7d8aa3" />
+    </svg>
+  );
+}
+
 export function Taskbar({ startOpen, onStart }: { startOpen: boolean; onStart: () => void }) {
   const { windows, activeId } = useStore(wmStore);
   const { pinned } = useStore(prefsStore);
@@ -135,6 +147,7 @@ export function Taskbar({ startOpen, onStart }: { startOpen: boolean; onStart: (
   const now = useNow(settings.showSeconds ? 1000 : 5000);
   const [popup, setPopup] = useState<null | 'clock' | 'volume' | 'network' | 'hidden' | 'lang'>(null);
   const lang = useLang();
+  const xp = settings.skin === 'xp';
   const [preview, setPreview] = useState<null | { app: AppId; left: number }>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -199,6 +212,39 @@ export function Taskbar({ startOpen, onStart }: { startOpen: boolean; onStart: (
           ]);
         }}
       >
+        {xp ? (
+          <>
+            <button className={cls('xp-start-btn', startOpen && 'open')} onPointerDown={(e) => e.stopPropagation()} onClick={onStart} title={tr('Klicke hier, um zu beginnen.', 'Click here to begin.')} aria-label={tr("Startmenü", "Start menu")}>
+              <Emblem size={22} /><span>{tr('Start', 'start')}</span>
+            </button>
+            <div className="xp-quicklaunch">
+              <button title={tr('Desktop anzeigen', 'Show Desktop')} onPointerDown={(e) => e.stopPropagation()} onClick={() => wm.minimizeAll()}><DesktopGlyph /></button>
+              {pinned.map((app) => (
+                <button key={app} title={APPS[app].title} onPointerDown={(e) => e.stopPropagation()} onClick={() => openApp(app)}>{APPS[app].smallIcon()}</button>
+              ))}
+            </div>
+            <div className="xp-tasks">
+              {windows.filter((w) => w.app !== 'msgbox' && w.phase !== 'closing').map((w) => (
+                <button
+                  key={w.id}
+                  data-taskbtn={w.app}
+                  className={cls('xp-task', w.id === activeId && !w.minimized && 'active')}
+                  title={w.title}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => (w.minimized ? wm.restore(w.id) : w.id === activeId ? wm.minimize(w.id) : wm.focus(w.id))}
+                  onContextMenu={(e) => { e.preventDefault(); openContextMenu({ clientX: e.clientX, clientY: e.clientY - 4 }, [
+                    { label: w.minimized ? tr('Wiederherstellen', 'Restore') : tr('Minimieren', 'Minimize'), onClick: () => (w.minimized ? wm.restore(w.id) : wm.minimize(w.id)) },
+                    'sep',
+                    { label: tr('Schließen', 'Close'), icon: <CapGlyph kind="close" />, onClick: () => wm.close(w.id) },
+                  ]); }}
+                >
+                  <span className="xp-task-ic">{APPS[w.app].smallIcon()}</span><span className="xp-task-label">{w.title}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+        <>
         <button className={cls('start-orb', startOpen && 'open')} onPointerDown={(e) => e.stopPropagation()} onClick={onStart} title={tr("Starten", "Start")} aria-label={tr("Startmenü", "Start menu")}>
           <span className="orb"><Emblem /></span>
         </button>
@@ -238,6 +284,8 @@ export function Taskbar({ startOpen, onStart }: { startOpen: boolean; onStart: (
             );
           })}
         </div>
+        </>
+        )}
 
         <div className="tray">
           <button className="tray-icon hide-mobile" title={tr("Ausgeblendete Symbole einblenden", "Show hidden icons")} onPointerDown={(e) => e.stopPropagation()} onClick={() => setPopup(popup === 'hidden' ? null : 'hidden')}><UpArrowIcon /></button>
@@ -253,8 +301,8 @@ export function Taskbar({ startOpen, onStart }: { startOpen: boolean; onStart: (
             </button>
           )}
           <button className="tray-lang" title={tr('Eingabesprache: Deutsch (Deutschland)', 'Input language: English (United States)')} onPointerDown={(e) => e.stopPropagation()} onClick={() => setPopup(popup === 'lang' ? null : 'lang')}>{lang.toUpperCase()}</button>
-          <button className="tray-icon" title={settings.dark ? tr('Dunkelmodus ausschalten', 'Turn off dark mode') : tr('Dunkelmodus einschalten', 'Turn on dark mode')} aria-pressed={settings.dark} onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => { setDark(!settings.dark); playChime('click'); }}>{settings.dark ? <SunIcon /> : <MoonIcon />}</button>
+          {!xp && <button className="tray-icon" title={settings.dark ? tr('Dunkelmodus ausschalten', 'Turn off dark mode') : tr('Dunkelmodus einschalten', 'Turn on dark mode')} aria-pressed={settings.dark} onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => { setDark(!settings.dark); playChime('click'); }}>{settings.dark ? <SunIcon /> : <MoonIcon />}</button>}
           <button className="tray-icon hide-mobile" title={tr("Wartungscenter: Keine Probleme gefunden", "Action Center: No issues found")} onPointerDown={(e) => e.stopPropagation()}
             onClick={() => openApp('about')}><FlagIcon /></button>
           <button className="tray-icon" title={online ? tr("Internetzugriff", "Internet access") : tr("Keine Verbindung", "No connection")} onPointerDown={(e) => e.stopPropagation()} onClick={() => setPopup(popup === 'network' ? null : 'network')}>
@@ -265,15 +313,15 @@ export function Taskbar({ startOpen, onStart }: { startOpen: boolean; onStart: (
           </button>
           <button className="tray-clock" onPointerDown={(e) => e.stopPropagation()} onClick={() => setPopup(popup === 'clock' ? null : 'clock')} title={now.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}>
             <span>{timeStr}</span>
-            <span>{dateStr}</span>
+            {!xp && <span>{dateStr}</span>}
           </button>
-          <button className="show-desktop" title={tr("Desktop anzeigen", "Show desktop")} onPointerDown={(e) => e.stopPropagation()} onClick={() => wm.minimizeAll()}
+          {!xp && <button className="show-desktop" title={tr("Desktop anzeigen", "Show desktop")} onPointerDown={(e) => e.stopPropagation()} onClick={() => wm.minimizeAll()}
             onMouseEnter={() => document.querySelectorAll<HTMLElement>('[data-win]').forEach((el) => el.classList.add('peek-hidden'))}
-            onMouseLeave={() => document.querySelectorAll<HTMLElement>('[data-win]').forEach((el) => el.classList.remove('peek-hidden'))} />
+            onMouseLeave={() => document.querySelectorAll<HTMLElement>('[data-win]').forEach((el) => el.classList.remove('peek-hidden'))} />}
         </div>
       </div>
 
-      {preview && appWins(preview.app).length > 0 && (
+      {!xp && preview && appWins(preview.app).length > 0 && (
         <Preview
           app={preview.app}
           wins={appWins(preview.app)}

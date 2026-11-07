@@ -3,6 +3,7 @@ import { wm } from './wm';
 import { StatusGlyph } from './icons';
 import type { AppProps } from './apps';
 import { tr } from '../lib/i18n';
+import { playSound } from './sounds';
 
 export function MessageBox({ winId, props }: AppProps) {
   const { text, heading, icon = 'info', buttons = ['OK'], defaultButton = 0, resolve } = props;
@@ -18,6 +19,7 @@ export function MessageBox({ winId, props }: AppProps) {
 
   useEffect(() => {
     btnRef.current?.focus();
+    playSound(icon === 'error' ? 'error' : icon === 'warning' || icon === 'question' ? 'exclamation' : 'ding');
     wm.setProps(winId, { onCloseRequest: () => finish(buttons.includes(tr("Abbrechen", "Cancel")) ? tr("Abbrechen", "Cancel") : buttons[buttons.length - 1]) });
     const onKey = (e: KeyboardEvent) => {
       if (wm.get(winId) && document.activeElement?.closest(`[data-win="${winId}"]`)) {

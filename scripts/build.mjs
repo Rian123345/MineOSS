@@ -24,6 +24,19 @@ function writeIndex(metafile) {
   fs.copyFileSync(path.join(root, 'client', 'favicon.svg'), path.join(outPublic, 'favicon.svg'));
   // Bilder (Hintergrund, Minecraft-Texturen) kopieren
   fs.cpSync(path.join(root, 'client', 'assets'), outPublic, { recursive: true });
+  // Eigene Sounddateien (z. B. sounds/xp/startup.mp3) → Liste für den Client
+  const soundDir = path.join(root, 'client', 'assets', 'sounds');
+  const sounds = [];
+  const walk = (d, rel) => {
+    if (!fs.existsSync(d)) return;
+    for (const f of fs.readdirSync(d, { withFileTypes: true })) {
+      if (f.isDirectory()) walk(path.join(d, f.name), rel + f.name + '/');
+      else if (/\.(mp3|wav|ogg)$/i.test(f.name)) sounds.push(rel + f.name);
+    }
+  };
+  walk(soundDir, '');
+  fs.mkdirSync(path.join(outPublic, 'sounds'), { recursive: true });
+  fs.writeFileSync(path.join(outPublic, 'sounds', 'index.json'), JSON.stringify(sounds));
   // Minecraft-Texturen: liegen gebündelt in client/mc-textures.json → einzelne PNG-Dateien
   const pack = path.join(root, 'client', 'mc-textures.json');
   if (fs.existsSync(pack)) {

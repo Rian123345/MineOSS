@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Emblem, UserPic, PowerIcon } from './icons';
 import { tr } from '../lib/i18n';
 
@@ -86,5 +86,98 @@ export function OffScreen({ onPower }: { onPower: () => void }) {
         <div className="off-hint">{tr("Der Computer wurde heruntergefahren.", "The computer has been shut down.")}<br />{tr("Zum Einschalten auf die Taste klicken.", "Click the button to turn it on.")}</div>
       </div>
     </div>
+  );
+}
+
+/* ═══════════════════ XP-Theme ═══════════════════ */
+
+/** MineOS-Schriftzug im XP-Stil (eigenes Logo, kein Microsoft-Logo) */
+export function XpWordmark({ size = 1 }: { size?: number }) {
+  return (
+    <div className="xp-wordmark" style={{ fontSize: `${size}em` }}>
+      <Emblem size={Math.round(64 * size)} />
+      <div className="xpw-text">
+        <span className="xpw-small">SeñorPollo</span>
+        <span className="xpw-big">MineOS<sup>XP</sup></span>
+      </div>
+    </div>
+  );
+}
+
+/** Der klassische schwarze Ladebildschirm mit dem wandernden blauen Balken */
+export function BootScreenXP({ onDone, fast }: { onDone: () => void; fast: boolean }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, fast ? 1600 : 4600);
+    return () => clearTimeout(t);
+  }, [onDone, fast]);
+  return (
+    <div className="xp-boot">
+      <div className="xp-boot-center">
+        <XpWordmark size={1.15} />
+        <div className="xp-boot-bar" role="progressbar" aria-label={tr('MineOS wird gestartet', 'Starting MineOS')}><i><span /><span /><span /></i></div>
+      </div>
+      <div className="xp-boot-foot">
+        <span>Copyright © MineOS · SeñorPollo Shop Order</span>
+        <span className="xpb-brand">MineOS</span>
+      </div>
+    </div>
+  );
+}
+
+/** Blauer Rahmen von Anmelde-, Willkommens- und Abmeldebildschirm */
+export function XpFrame({ children, bottom }: { children: ReactNode; bottom?: ReactNode }) {
+  return (
+    <div className="xp-frame">
+      <div className="xpf-top" />
+      <div className="xpf-mid">{children}</div>
+      <div className="xpf-bottom">{bottom}</div>
+    </div>
+  );
+}
+
+export function WelcomeScreenXP({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 1700);
+    return () => clearTimeout(t);
+  }, [onDone]);
+  return (
+    <XpFrame>
+      <div className="xp-welcome-text">{tr('willkommen', 'welcome')}</div>
+    </XpFrame>
+  );
+}
+
+export function ShutdownScreenXP({ text, onDone }: { text: string; onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 2600);
+    return () => clearTimeout(t);
+  }, [onDone]);
+  return (
+    <XpFrame>
+      <div className="xp-status">
+        <XpWordmark size={0.9} />
+        <div className="xp-status-text">{text}</div>
+      </div>
+    </XpFrame>
+  );
+}
+
+export function LockScreenXP({ user, admin, onUnlock }: { user: string; admin: boolean; onUnlock: () => void }) {
+  return (
+    <XpFrame bottom={<span className="xpf-hint">{tr('Dieser Computer ist gesperrt.', 'This computer is locked.')}</span>}>
+      <div className="xp-logon-split">
+        <div className="xpl-left">
+          <XpWordmark />
+          <div className="xpl-tagline">{tr('Klicke auf deinen Benutzernamen, um fortzufahren.', 'Click your user name to continue.')}</div>
+        </div>
+        <div className="xpl-divider" />
+        <div className="xpl-right">
+          <button className="xp-user-tile selected" onClick={onUnlock} autoFocus>
+            <span className="xput-pic"><UserPic size={48} admin={admin} /></span>
+            <span className="xput-name">{user}<small>{tr('Gesperrt – zum Entsperren klicken', 'Locked – click to unlock')}</small></span>
+          </button>
+        </div>
+      </div>
+    </XpFrame>
   );
 }

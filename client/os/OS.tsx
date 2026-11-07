@@ -6,9 +6,10 @@ import { Desktop } from './Desktop';
 import { Taskbar } from './Taskbar';
 import { StartMenu } from './StartMenu';
 import { ContextMenuHost, closeContextMenu } from './ContextMenu';
-import { BootScreen, WelcomeScreen, ShutdownScreen, OffScreen, LockScreen } from './Boot';
+import { BootScreen, WelcomeScreen, ShutdownScreen, OffScreen, LockScreen, BootScreenXP, WelcomeScreenXP, ShutdownScreenXP, LockScreenXP } from './Boot';
+import { StartMenuXP, XpSessionDialog } from './StartMenuXP';
 import { LogonScreen } from './Logon';
-import { WALLPAPER_URL } from './wallpapers';
+import { wallpaperFor } from './wallpapers';
 import { checkSession, sessionStore, registerOrderOpener, logout, playChime } from './session';
 import { loadCatalog } from '../lib/catalog';
 import { openApp, APPS } from './apps';
@@ -33,6 +34,8 @@ export function OS() {
   const fastBoot = (() => { try { return sessionStorage.getItem('mineos.booted') === '1'; } catch { return false; } })();
   const [phase, setPhase] = useState<Phase>('boot');
   const [start, setStart] = useState<'closed' | 'open' | 'closing'>('closed');
+  const [xpDialog, setXpDialog] = useState<null | 'logoff' | 'turnoff'>(null);
+  const xp = settings.skin === 'xp';
   const startTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const openStart = useCallback(() => { clearTimeout(startTimer.current); setStart('open'); }, []);
@@ -63,9 +66,11 @@ export function OS() {
       setTimeout(() => root.classList.remove('theme-anim'), 350);
     }
     themeFirst.current = false;
-    root.dataset.theme = settings.dark ? 'dark' : 'light';
-    root.style.colorScheme = settings.dark ? 'dark' : 'light';
-  }, [settings.dark]);
+    const dark = settings.dark && settings.skin !== 'xp'; // XP kennt keinen Dunkelmodus
+    root.dataset.theme = dark ? 'dark' : 'light';
+    root.dataset.skin = settings.skin;
+    root.style.colorScheme = dark ? 'dark' : 'light';
+  }, [settings.dark, settings.skin]);
 
   // Sprache gewechselt → feste Fenstertitel nachziehen (Store/Verwaltung setzen ihren Titel selbst)
   const lang = useLang();
@@ -120,9 +125,10 @@ export function OS() {
     setPhase(s.user ? 'welcome' : 'login');
   }, []);
   const welcomeDone = useCallback(() => {
-    try { sessionStorage.setItem('mineos.booted', '1'); } catch { /* egal */ }
+    let firstBoot = true;
+    try { firstBoot = sessionStorage.getItem('mineos.booted') !== '1'; sessionStorage.setItem('mineos.booted', '1'); } catch { /* egal */ }
     setPhase('desktop');
-    playChime('logon');
+    playChime(settingsStore.get().skin === 'xp' && firstBoot ? 'startup' : 'logon');
     void loadCatalog(true);
     setTimeout(handleHash, 60);
   }, []);
@@ -133,13 +139,16 @@ export function OS() {
   const onShutdown = (mode: 'shutdown' | 'restart' | 'lock' | 'logoff') => {
     closeContextMenu();
     setStart('closed');
+    setXpDialog(null);
     if (mode === 'lock') { setPhase('locked'); return; }
     wm.closeAll();
     if (mode === 'logoff') {
       setPhase('logoff');
+      playChime('logoff');
       void logout();
       return;
     }
+    playChime('shutdown');
     try { sessionStorage.removeItem('mineos.booted'); } catch { /* egal */ }
     setTimeout(() => setPhase(mode === 'restart' ? 'restart' : 'shutdown'), 250);
   };
@@ -149,26 +158,43 @@ export function OS() {
 
   return (
     <div className="os-root">
-      <div className="desktop-wallpaper" style={{ backgroundImage: `url("${WALLPAPER_URL}")` }} />
+      <div className={`desktop-wallpaper${xpDialog ? ' xp-gray' : ''}`} style={{ backgroundImage: `url("${wallpaperFor(settings)}")` }} />
       {inSession && (
-        <div className="session-layer">
+        <div className={`session-layer${xpDialog ? ' xp-gray' : ''}`}>
           <Desktop />
           <div className="windows-layer" id="windows-layer">
             {windows.map((w) => <Window key={w.id} win={w} />)}
           </div>
-          {start !== 'closed' && <StartMenu closing={start === 'closing'} onClose={closeStart} onShutdown={onShutdown} />}
+          {start !== 'closed' && (xp
+            ? <StartMenuXP closing={start === 'closing'} onClose={closeStart} onXpDialog={setXpDialog} />
+            : <StartMenu closing={start === 'closing'} onClose={closeStart} onShutdown={onShutdown} />)}
           <Taskbar startOpen={start === 'open'} onStart={toggleStart} />
           <ContextMenuHost />
         </div>
       )}
-      {phase === 'boot' && <BootScreen onDone={bootDone} fast={fastBoot} />}
-      {phase === 'login' && <LogonScreen onShutdown={() => onShutdown('shutdown')} />}
-      {phase === 'welcome' && <WelcomeScreen onDone={welcomeDone} user={userName} admin={session.isAdmin} />}
-      {phase === 'logoff' && <ShutdownScreen text={tr("Abmelden …", "Logging off …")} onDone={logoffDone} />}
-      {phase === 'shutdown' && <ShutdownScreen text={tr("Wird heruntergefahren …", "Shutting down …")} onDone={shutdownDone} />}
-      {phase === 'restart' && <ShutdownScreen text={tr("Wird neu gestartet …", "Restarting …")} onDone={restartDone} />}
+      {xpDialog && inSession && <XpSessionDialog kind={xpDialog} onChoose={onShutdown} onCancel={() => setXpDialog(null)} />}
+      {xp ? (
+        <>
+          {phase === 'boot' && <BootScreenXP onDone={bootDone} fast={fastBoot} />}
+          {phase === 'login' && <LogonScreen onShutdown={() => onShutdown('shutdown')} />}
+          {phase === 'welcome' && <WelcomeScreenXP onDone={welcomeDone} />}
+          {phase === 'logoff' && <ShutdownScreenXP text={tr('Abmelden …', 'Logging off …')} onDone={logoffDone} />}
+          {phase === 'shutdown' && <ShutdownScreenXP text={tr('MineOS wird heruntergefahren …', 'MineOS is shutting down …')} onDone={shutdownDone} />}
+          {phase === 'restart' && <ShutdownScreenXP text={tr('MineOS wird neu gestartet …', 'MineOS is restarting …')} onDone={restartDone} />}
+          {phase === 'locked' && <LockScreenXP user={userName} admin={session.isAdmin} onUnlock={() => setPhase('desktop')} />}
+        </>
+      ) : (
+        <>
+          {phase === 'boot' && <BootScreen onDone={bootDone} fast={fastBoot} />}
+          {phase === 'login' && <LogonScreen onShutdown={() => onShutdown('shutdown')} />}
+          {phase === 'welcome' && <WelcomeScreen onDone={welcomeDone} user={userName} admin={session.isAdmin} />}
+          {phase === 'logoff' && <ShutdownScreen text={tr("Abmelden …", "Logging off …")} onDone={logoffDone} />}
+          {phase === 'shutdown' && <ShutdownScreen text={tr("Wird heruntergefahren …", "Shutting down …")} onDone={shutdownDone} />}
+          {phase === 'restart' && <ShutdownScreen text={tr("Wird neu gestartet …", "Restarting …")} onDone={restartDone} />}
+          {phase === 'locked' && <LockScreen user={userName} admin={session.isAdmin} onUnlock={() => setPhase('desktop')} />}
+        </>
+      )}
       {phase === 'off' && <OffScreen onPower={() => setPhase('boot')} />}
-      {phase === 'locked' && <LockScreen user={userName} admin={session.isAdmin} onUnlock={() => setPhase('desktop')} />}
     </div>
   );
 }
