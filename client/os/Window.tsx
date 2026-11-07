@@ -2,7 +2,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { wm, wmStore, type WinState, isMobile } from './wm';
 import { useStore } from '../lib/store';
-import { CapGlyph } from './icons';
+import { CapGlyph, XpGlyph } from './icons';
 import { APPS } from './apps';
 import { cls } from '../lib/format';
 
@@ -16,18 +16,6 @@ const AppHost = memo(function AppHost({ win }: { win: Pick<WinState, 'id' | 'app
 }, (a, b) => a.win.id === b.win.id && a.win.props === b.win.props && a.win.nonce === b.win.nonce);
 
 type Dir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
-
-/** Symbole der Fensterknöpfe im XP-Stil (werden nur im XP-Theme angezeigt) */
-function XpGlyph({ kind }: { kind: 'min' | 'max' | 'restore' | 'close' }) {
-  return (
-    <svg className="xp-glyph" width="21" height="21" viewBox="0 0 21 21" aria-hidden="true">
-      {kind === 'min' && <rect x="5" y="13" width="7" height="3" fill="#fff" />}
-      {kind === 'max' && <path d="M5 5h11v11H5z M6 8v7h9V8z" fill="#fff" fillRule="evenodd" />}
-      {kind === 'restore' && <path d="M8 4h9v9h-3v-1h2V7H9v1H8z M4 8h9v9H4z M5 11v5h7v-5z" fill="#fff" fillRule="evenodd" />}
-      {kind === 'close' && <path d="M5.5 5.5l10 10M15.5 5.5l-10 10" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />}
-    </svg>
-  );
-}
 
 export function Window({ win }: { win: WinState }) {
   const activeId = useStore(wmStore).activeId;

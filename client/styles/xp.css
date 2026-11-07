@@ -568,6 +568,10 @@
   --text: var(--d-text);
   --link: #6db3ff;
   --heading: #8fc3ff;
+  --hover-border: #c98a2e;
+  --hover-bg: linear-gradient(#34383e, #2d3036);
+  --sel-border: #4d86c6;
+  --sel-bg: linear-gradient(#2f4a6b, #283f5d);
 }
 [data-skin=xp][data-theme=dark] ::selection { background: #3d6fc4; }
 

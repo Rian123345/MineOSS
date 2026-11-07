@@ -346,3 +346,15 @@ export function Chevron({ dir = 'right', size = 8, color = '#333' }: { dir?: 'ri
   const rot = dir === 'down' ? 90 : dir === 'left' ? 180 : 0;
   return <svg width={size} height={size} viewBox="0 0 8 8" style={{ transform: `rotate(${rot}deg)` }}><path d="M2 1l4 3-4 3z" fill={color} /></svg>;
 }
+
+/** Luna-Symbole für die Fenster-Knöpfe im XP-Theme */
+export function XpGlyph({ kind }: { kind: 'min' | 'max' | 'restore' | 'close' }) {
+  return (
+    <svg className="xp-glyph" width="21" height="21" viewBox="0 0 21 21" aria-hidden="true">
+      {kind === 'min' && <rect x="5" y="13" width="7" height="3" fill="#fff" />}
+      {kind === 'max' && <path d="M5 5h11v11H5z M6 8v7h9V8z" fill="#fff" fillRule="evenodd" />}
+      {kind === 'restore' && <path d="M8 4h9v9h-3v-1h2V7H9v1H8z M4 8h9v9H4z M5 11v5h7v-5z" fill="#fff" fillRule="evenodd" />}
+      {kind === 'close' && <path d="M5.5 5.5l10 10M15.5 5.5l-10 10" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" />}
+    </svg>
+  );
+}

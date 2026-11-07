@@ -21,7 +21,7 @@ function writeIndex(metafile) {
     .replace('<!--CSS-->', css ? `<link rel="stylesheet" href="/${css}">` : '')
     .replace('<!--JS-->', `<script type="module" src="/${js}"></script>`);
   fs.writeFileSync(path.join(outPublic, 'index.html'), html);
-  fs.copyFileSync(path.join(root, 'client', 'favicon.svg'), path.join(outPublic, 'favicon.svg'));
+  fs.copyFileSync(path.join(root, 'client', 'favicon.png'), path.join(outPublic, 'favicon.png'));
   // Bilder (Hintergrund, Minecraft-Texturen) kopieren
   fs.cpSync(path.join(root, 'client', 'assets'), outPublic, { recursive: true });
   // Eigene Sounddateien (z. B. sounds/xp/startup.mp3) → Liste für den Client

@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { sessionExpired } from '../../os/session';
-import { CapGlyph } from '../../os/icons';
+import { CapGlyph, XpGlyph } from '../../os/icons';
 import type { OrderStatus } from '../../../shared/constants';
 import { STATUS_LABELS } from '../../../shared/constants';
 import { tr } from '../../lib/i18n';
@@ -36,7 +36,7 @@ export function Dialog({ title, children, footer, onClose, width = 560 }: { titl
         <div className="win-inner">
           <div className="win-titlebar"><span className="win-title">{title}</span></div>
           <div className="win-caption">
-            <button className="cap-close" style={{ width: 43, borderRadius: '0 0 5px 5px' }} onClick={onClose} aria-label={tr("Schließen", "Close")}><CapGlyph kind="close" /></button>
+            <button className="cap-close" style={{ width: 43, borderRadius: '0 0 5px 5px' }} onClick={onClose} aria-label={tr("Schließen", "Close")}><CapGlyph kind="close" /><XpGlyph kind="close" /></button>
           </div>
           <div className="win-client">
             <div className="inwin-body">{children}</div>
